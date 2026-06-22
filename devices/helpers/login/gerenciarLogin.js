@@ -11,6 +11,15 @@ async function gerenciarLogin(page, context) {
     await page.waitForSelector("#app_totp");
     // Remove espaços em branco do segredo (comum ao copiar e colar do GitHub)
     const segredoLimpo = CONFIG.totpSecret.replace(/\s+/g, '');
+
+    // Permite ajustar o relógio via .env caso a VM esteja com o relógio travado/atrasado
+    const timeOffsetSeconds = parseFloat(process.env.TIME_OFFSET_SECONDS || "0");
+    if (timeOffsetSeconds !== 0) {
+        const adjustedEpoch = Date.now() + (timeOffsetSeconds * 1000);
+        authenticator.options = { epoch: adjustedEpoch };
+        console.log(`🕒 Aplicando ajuste de tempo de ${timeOffsetSeconds} segundos na geração do 2FA. (Hora real simulada: ${new Date(adjustedEpoch).toISOString()})`);
+    }
+
     const codigoMfa = authenticator.generate(segredoLimpo);
     
     await page.fill("#app_totp", codigoMfa);
