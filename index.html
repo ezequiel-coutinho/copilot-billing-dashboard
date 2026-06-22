@@ -2809,10 +2809,24 @@
                         </div>
                     </td>
                     <td>
-                        <strong style="color: ${addBilled > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
-                            ${m.additionalUsage || '$0.00'}
-                        </strong>
-                        ${addBilled > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                        <div class="tooltip-container" style="cursor: help;">
+                            <strong style="color: ${addBilled > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+                                ${m.additionalUsage || '$0.00'}
+                            </strong>
+                            ${addBilled > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                            <i data-lucide="info" size="13" style="color: var(--text-muted); cursor: help; margin-left: 2px;"></i>
+                            <div class="tooltip-box" style="text-transform: none;">
+                                <div style="font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 0.5rem; padding-bottom: 0.25rem; color: var(--accent-orange); display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="info" size="14"></i> Limite em Dólar (USD)
+                                </div>
+                                <div style="margin-bottom: 0.35rem;">
+                                    <strong>Custo Adicional:</strong> ${m.additionalUsage || '$0.00'}
+                                </div>
+                                <div style="color: rgba(255, 255, 255, 0.85); font-size: 0.75rem;">
+                                    Este valor representa o custo excedente real (acima da franquia grátis de créditos) e é <strong>descontado diretamente do limite de $200.00 USD</strong> da organização.
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2923,11 +2937,25 @@
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <strong style="color: ${addCost > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
-                                ${u.totalAdditionalUsage || '$0.00'}
-                            </strong>
-                            ${addCost > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                        <div onclick="event.stopPropagation()">
+                            <div class="tooltip-container" style="cursor: help;">
+                                <strong style="color: ${addCost > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+                                    ${u.totalAdditionalUsage || '$0.00'}
+                                </strong>
+                                ${addCost > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                                <i data-lucide="info" size="13" style="color: var(--text-muted); cursor: help; margin-left: 2px;"></i>
+                                <div class="tooltip-box" style="text-transform: none; font-weight: normal;">
+                                    <div style="font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 0.5rem; padding-bottom: 0.25rem; color: var(--accent-orange); display: flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="info" size="14"></i> Limite em Dólar (USD)
+                                    </div>
+                                    <div style="margin-bottom: 0.35rem;">
+                                        <strong>Custo Extra Total:</strong> ${u.totalAdditionalUsage || '$0.00'}
+                                    </div>
+                                    <div style="color: rgba(255, 255, 255, 0.85); font-size: 0.75rem; white-space: normal;">
+                                        Este valor representa o custo excedente acumulado por este desenvolvedor (acima da franquia grátis) e é <strong>descontado diretamente do limite de $200.00 USD</strong> da organização.
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div><i data-lucide="chevron-down" size="18" style="color: var(--text-muted); transition: transform 0.2s;"></i></div>
                     </div>
@@ -2978,10 +3006,24 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <strong style="color: ${addUsageM > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
-                                                        ${m.additionalUsage || '$0.00'}
-                                                    </strong>
-                                                    ${addUsageM > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                                                    <div class="tooltip-container" style="cursor: help;">
+                                                        <strong style="color: ${addUsageM > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+                                                            ${m.additionalUsage || '$0.00'}
+                                                        </strong>
+                                                        ${addUsageM > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                                                        <i data-lucide="info" size="13" style="color: var(--text-muted); cursor: help; margin-left: 2px;"></i>
+                                                        <div class="tooltip-box" style="text-transform: none; font-weight: normal;">
+                                                            <div style="font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 0.5rem; padding-bottom: 0.25rem; color: var(--accent-orange); display: flex; align-items: center; gap: 4px;">
+                                                                <i data-lucide="info" size="14"></i> Limite em Dólar (USD)
+                                                            </div>
+                                                            <div style="margin-bottom: 0.35rem;">
+                                                                <strong>Custo Extra:</strong> ${m.additionalUsage || '$0.00'}
+                                                            </div>
+                                                            <div style="color: rgba(255, 255, 255, 0.85); font-size: 0.75rem; white-space: normal;">
+                                                                Este valor representa o custo excedente real (acima do pacote de créditos inclusos grátis) e é <strong>descontado diretamente do limite de $200.00 USD</strong> da organização.
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                             </tr>
                                             `;
