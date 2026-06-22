@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 
 function injectData(template, placeholder, data) {
     const regex = new RegExp(`\\/\\* ${placeholder}_START \\*\\/[\\s\\S]*?\\/\\* ${placeholder}_END \\*\\/`, 'g');
@@ -51,6 +52,9 @@ try {
     insightsHtml = injectData(insightsHtml, 'HISTORICO_PLACEHOLDER', historico);
     fs.writeFileSync("insights.html", insightsHtml, "utf-8");
     console.log(`✓ insights.html compilado com sucesso.${historico.length > 0 ? ` (${historico.length} mês(es) histórico injetado)` : ' (sem histórico ainda)'}`);
+
+    // ── 3. Gera slack_payload.json ────────────────────────────────────────────
+    execSync('node generate_slack.js', { stdio: 'inherit' });
 
 } catch (error) {
     console.error("Erro durante a compilação:", error);

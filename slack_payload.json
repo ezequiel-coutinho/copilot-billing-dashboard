@@ -1,0 +1,88 @@
+{
+  "text": ":rotating_light: Copilot AI — Relatório do ciclo (22/06/2026, 08:21:32)",
+  "attachments": [
+    {
+      "color": "#ef4444",
+      "blocks": [
+        {
+          "type": "header",
+          "text": {
+            "type": "plain_text",
+            "text": ":rotating_light: Copilot AI Rentcars — CRÍTICO",
+            "emoji": true
+          }
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": "📅 Ciclo de junho · Dia *22* de *30* · Gerado em 22/06/2026, 08:21:32"
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "fields": [
+            {
+              "type": "mrkdwn",
+              "text": "*📊 Créditos Inclusos*\n137.984 / 138.000\n*100.0%* utilizado"
+            },
+            {
+              "type": "mrkdwn",
+              "text": "*💵 Orçamento (USD)*\n$118.19 / $200.00\n*59.1%* utilizado"
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "fields": [
+            {
+              "type": "mrkdwn",
+              "text": "*⚡ Ritmo de Créditos*\n~6.272 cr/dia\n_(base: 22 dias)_"
+            },
+            {
+              "type": "mrkdwn",
+              "text": "*💸 Ritmo de Gastos*\n~$5.37/dia\n_(8 dias restantes)_"
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": "*📈 Projeção — Fim de junho*\n:red_circle: *~188.160 cr* projetados — déficit de ~50.160 cr\n:large_green_circle: *~$161.17* projetados — dentro do orçamento"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": "*🔥 Top 5 Consumidores*\n🥇 `vitorsavickirentscars` — *36.577 cr* (24.4%) · _$29.63 extra_\n🥈 `GiovanniRentcars` — *30.028 cr* (20.0%) · _$23.97 extra_\n🥉 `ravialbuquerque` — *19.610 cr* (13.1%) · _$12.10 extra_\n4. `lucas-rentcars` — *8.483 cr* (5.7%) · _$27.80 extra_\n5. `JeferscnPereira` — *7.212 cr* (4.8%) · _$3.53 extra_"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": "<http://172.16.254.207:8080/insights.html|🔗 Ver Dashboard Completo>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
