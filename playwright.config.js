@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: "html",
   use: {
-    headless: false,
+    headless: true,
     screenshot: "on",
     video: "on",
     storageState: fs.existsSync("auth.json") ? "auth.json" : undefined,
