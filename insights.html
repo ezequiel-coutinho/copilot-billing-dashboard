@@ -308,7 +308,7 @@
         <div class="panel-header">
             <h2 class="panel-title">
                 <i data-lucide="flame" style="color: var(--accent-red);"></i>
-                Top 10 Consumidores — Ranking, Modelos & Projeção
+                Consumidores — Ranking, Modelos & Projeção
             </h2>
             <span id="lbl-total-org" style="font-size:0.85rem;color:var(--text-secondary);"></span>
         </div>
@@ -2145,6 +2145,9 @@
     let _allUsersSorted = [];
     let _totalOrg = 0;
     let _projParams = null;
+    let _currentPage = 1;
+    let _itemsPerPage = 5;
+    let _filteredUsers = [];
 
     function buildUserRow(u, rank, totalOrg, p, query) {
         const total    = parseF(u.totalIncludedCredits) + parseF(u.totalAdditionalCredits);
@@ -2200,6 +2203,7 @@
     }
 
     function renderTabela(lista, query) {
+        _filteredUsers = lista;
         const info = document.getElementById('user-search-info');
         if (lista.length === 0) {
             document.getElementById('top-users-grid').innerHTML =
@@ -2207,19 +2211,46 @@
             info.textContent = '';
             return;
         }
-        const rows = lista.map((u, i) => buildUserRow(u, _allUsersSorted.indexOf(u) + 1, _totalOrg, _projParams, query)).join('');
+        const totalPages = Math.ceil(lista.length / _itemsPerPage);
+        if (_currentPage > totalPages) _currentPage = totalPages;
+        const start = (_currentPage - 1) * _itemsPerPage;
+        const end   = start + _itemsPerPage;
+        const pageLista = lista.slice(start, end);
+
+        const rows = pageLista.map(u => buildUserRow(u, _allUsersSorted.indexOf(u) + 1, _totalOrg, _projParams, query)).join('');
+
+        const from = start + 1;
+        const to   = Math.min(end, lista.length);
+        info.textContent = query
+            ? `${lista.length} resultado${lista.length !== 1 ? 's' : ''} — exibindo ${from}–${to}`
+            : `Exibindo ${from}–${to} de ${_allUsersSorted.length} usuários`;
+
+        const btnStyle = 'display:flex;align-items:center;gap:0.35rem;padding:0.45rem 1rem;border:1px solid var(--border-color);border-radius:8px;background:#fff;color:var(--text-primary);font-family:var(--font-family);font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;';
+        const paginationHTML = totalPages > 1 ? `
+            <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border-color);">
+                <button onclick="mudarPagina(-1)" ${_currentPage <= 1 ? 'disabled' : ''} style="${btnStyle}${_currentPage <= 1 ? 'opacity:0.4;cursor:not-allowed;' : ''}">← Anterior</button>
+                <span style="font-size:0.82rem;color:var(--text-secondary);font-weight:600;">Página ${_currentPage} de ${totalPages}</span>
+                <button onclick="mudarPagina(1)" ${_currentPage >= totalPages ? 'disabled' : ''} style="${btnStyle}${_currentPage >= totalPages ? 'opacity:0.4;cursor:not-allowed;' : ''}">Próxima →</button>
+            </div>` : '';
+
         document.getElementById('top-users-grid').innerHTML = `
             <table class="tu-table">
                 <thead><tr><th>#</th><th>Usuário</th><th>Créditos</th><th>% Org</th><th>Ritmo</th><th>Proj. fim do mês</th><th>Top modelos</th></tr></thead>
                 <tbody>${rows}</tbody>
-            </table>`;
-        info.textContent = query ? `${lista.length} resultado${lista.length !== 1 ? 's' : ''}` : `Exibindo top 10 de ${_allUsersSorted.length}`;
+            </table>${paginationHTML}`;
+    }
+
+    function mudarPagina(delta) {
+        const totalPages = Math.ceil(_filteredUsers.length / _itemsPerPage);
+        _currentPage = Math.max(1, Math.min(_currentPage + delta, totalPages));
+        renderTabela(_filteredUsers, document.getElementById('user-search').value.trim());
     }
 
     function filtrarUsuarios(query) {
+        _currentPage = 1;
         const q = query.trim().toLowerCase();
         if (!q) {
-            renderTabela(_allUsersSorted.slice(0, 10), '');
+            renderTabela(_allUsersSorted, '');
             return;
         }
         const resultado = _allUsersSorted.filter(u => u.usuario.toLowerCase().includes(q));
@@ -2234,7 +2265,8 @@
         );
         _totalOrg = _allUsersSorted.reduce((s, u) => s + parseF(u.totalIncludedCredits) + parseF(u.totalAdditionalCredits), 0);
         document.getElementById('lbl-total-org').textContent = `Total org: ${fmtInt(_totalOrg)} cr · ${p.diaDoMes} dias decorridos`;
-        renderTabela(_allUsersSorted.slice(0, 10), '');
+        _currentPage = 1;
+        renderTabela(_allUsersSorted, '');
     }
 
     // ── Render Histórico ─────────────────────────────────────────────────────
