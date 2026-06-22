@@ -1,0 +1,6 @@
+node_modules/
+.env
+auth.json
+relatorio_final_copilot.json
+playwright-report/
+test-results/

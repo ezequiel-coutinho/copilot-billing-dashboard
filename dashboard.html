@@ -1,0 +1,3115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rentcars | Copilot AI Usage Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #f4f6f9; /* Pure light gray-blue background matching Rentcars body */
+            --card-bg: #ffffff; /* Crisp white cards matching Rentcars search container */
+            --border-color: #e2e8f0; /* Thin subtle border lines */
+            --text-primary: #1e293b; /* Deep slate gray for readability */
+            --text-secondary: #475569; /* Balanced slate for labels */
+            --text-muted: #94a3b8; /* Muted gray for small captions */
+            --accent-blue: #0076FF; /* Rentcars blue accent */
+            --accent-orange: #ffa800; /* Rentcars Signature Golden-Yellow/Orange */
+            --accent-green: #108c54; /* Rentcars primary CTA Green */
+            --accent-red: #ef4444;
+            --accent-navy: #0f1c3f; /* Deep Navy from Rentcars header */
+            --font-family: 'Plus Jakarta Sans', sans-serif;
+            --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+            --card-shadow-hover: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            line-height: 1.5;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 168, 0, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 118, 255, 0.03) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        /* Rentcars Deep Navy Header Section */
+        .top-hero-header {
+            background-color: var(--accent-navy);
+            background-image: linear-gradient(135deg, #0d1a3c 0%, #12244a 100%);
+            border-radius: 16px;
+            padding: 1.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-rentcars {
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -1.5px;
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .logo-subtitle {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            border-left: 2px solid var(--accent-orange);
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+            display: flex;
+            align-items: center;
+            height: 28px;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .update-badge {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Rentcars Green CTA Upload Button */
+        .btn-upload {
+            background: var(--accent-green);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0.65rem 1.35rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(16, 140, 84, 0.3);
+            transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 6px 20px rgba(16, 140, 84, 0.45);
+        }
+
+        .btn-upload input[type="file"] {
+            display: none;
+        }
+
+        /* Clean Dashboard Cards */
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, padding-bottom 0.3s ease;
+        }
+
+        .glass-card.card-collapsed {
+            padding-bottom: 0.5rem;
+        }
+
+        .glass-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-orange);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .stat-card.blue::before {
+            background: var(--accent-blue);
+        }
+
+        .stat-card.green::before {
+            background: var(--accent-green);
+        }
+
+        .stat-card.navy::before {
+            background: var(--accent-navy);
+        }
+
+        .stat-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .stat-sub {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Progress Bar component */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease-in-out;
+        }
+
+        /* Dashboard Main Panels Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Table & Lists */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-container {
+            position: relative;
+            min-width: 240px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.5rem 1rem 0.5rem 2.25rem;
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0, 118, 255, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Collapsible Section Styles */
+        .panel-collapse-content {
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, padding 0.35s ease;
+            max-height: 2500px; /* high limit to fit large list */
+            overflow: hidden;
+            opacity: 1;
+        }
+
+        .panel-collapse-content.collapsed {
+            max-height: 0 !important;
+            opacity: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            pointer-events: none;
+        }
+
+        .btn-collapse {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.4rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .btn-collapse:hover {
+            background: #f1f5f9;
+            color: var(--accent-orange);
+            border-color: var(--accent-orange);
+        }
+
+        /* Custom Styled Table */
+        .table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            background: #f8fafc;
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr {
+            transition: background-color 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-orange { background: rgba(255, 168, 0, 0.08); color: #d97706; border: 1px solid rgba(255, 168, 0, 0.2); }
+        .badge-blue { background: rgba(0, 118, 255, 0.08); color: var(--accent-blue); border: 1px solid rgba(0, 118, 255, 0.2); }
+        .badge-green { background: rgba(16, 140, 84, 0.08); color: var(--accent-green); border: 1px solid rgba(16, 140, 84, 0.2); }
+        .badge-gray { background: #f1f5f9; color: var(--text-secondary); border: 1px solid #cbd5e1; }
+        .badge-navy { background: rgba(15, 28, 63, 0.08); color: var(--accent-navy); border: 1px solid rgba(15, 28, 63, 0.2); }
+
+        /* Accordion / Expandable Users */
+        .user-accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .user-item {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: #ffffff;
+            overflow: hidden;
+            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .user-item:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        .user-header {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.2fr 1fr auto;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .user-header {
+                grid-template-columns: 1fr 1fr auto;
+                font-size: 0.8rem;
+            }
+            .user-header-hide-mobile {
+                display: none !important;
+            }
+        }
+
+        .user-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-navy), var(--accent-orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .user-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #f8fafc;
+            border-top: 1px solid transparent;
+        }
+
+        .user-content.open {
+            max-height: 1000px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .user-inner-details {
+            padding: 1.25rem;
+        }
+
+        /* Sorting / Filtering Controls */
+        .controls-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .select-sort {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.5rem 2.25rem 0.5rem 1rem;
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            min-width: 180px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .select-sort:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 118, 255, 0.1);
+        }
+
+        /* Chart card tweaks */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+        }
+
+        /* Pagination Component styling */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-pagination {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-pagination:hover:not(:disabled) {
+            background: rgba(0, 118, 255, 0.05);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-pagination:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Professionalized Footer Explanation Section */
+        .footer-billing-explain {
+            margin-top: 2rem;
+            background: #ffffff;
+            border-top: 3px solid var(--accent-orange);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: padding-bottom 0.3s ease;
+        }
+
+        .footer-billing-explain.card-collapsed {
+            padding-bottom: 1rem;
+        }
+
+        .footer-explain-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .footer-explain-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer-explain-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--accent-navy);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .explain-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .explain-col-header {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--accent-navy);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .explain-col-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .explain-col-badge {
+            background: #f1f5f9;
+            color: var(--text-secondary);
+            border: 1px solid #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            align-self: flex-start;
+        }
+
+        .explain-col-badge.active-badge {
+            background: rgba(255, 168, 0, 0.1);
+            color: #d97706;
+            border-color: rgba(255, 168, 0, 0.2);
+        }
+
+        /* Blinking/Pulsing animations for 95%+ usage */
+        @keyframes pulse-border {
+            0% {
+                border-color: rgba(239, 68, 68, 0.4);
+                box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), 0 0 0 0px rgba(239, 68, 68, 0.3);
+            }
+            50% {
+                border-color: var(--accent-red);
+                box-shadow: 0 4px 25px rgba(239, 68, 68, 0.15), 0 0 0 6px rgba(239, 68, 68, 0.15);
+            }
+            100% {
+                border-color: rgba(239, 68, 68, 0.4);
+                box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), 0 0 0 0px rgba(239, 68, 68, 0.3);
+            }
+        }
+
+        .warning-pulse {
+            animation: pulse-border 2s infinite ease-in-out !important;
+            border-width: 1.5px !important;
+        }
+
+        @keyframes text-blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .blink-text {
+            animation: text-blink 1.5s infinite ease-in-out;
+        }
+
+        .badge-red {
+            background: rgba(239, 68, 68, 0.1) !important;
+            color: var(--accent-red) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="top-hero-header">
+            <div class="logo-area">
+                <div class="logo-rentcars">rent<span style="color: var(--accent-orange);">cars</span><span style="font-weight: 300; font-size: 1.2rem; margin-left: 2px; color: rgba(255,255,255,0.7);">.com</span></div>
+                <div class="logo-subtitle">Copilot Billing Dashboard</div>
+            </div>
+            <div class="header-meta">
+                <!-- Date Filter Input -->
+                <div class="update-badge" style="gap: 0.75rem;">
+                    <i data-lucide="calendar" size="14" style="color: var(--accent-orange);"></i>
+                    <label for="filter-period" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Período:</label>
+                    <select id="filter-period" class="select-sort" style="min-width: 150px; background: transparent; border: none; padding: 0 1.5rem 0 0; font-size: 0.85rem; color: #fff; background-position: right 0 center;">
+                        <option value="current">Junho 2026 (Atual)</option>
+                        <option value="all">Histórico Completo</option>
+                    </select>
+                </div>
+
+                <div class="update-badge">
+                    <i data-lucide="clock" size="14"></i>
+                    Gerado em: <span id="lbl-data-geracao">--/--/---- --:--</span>
+                </div>
+                <label class="btn-upload">
+                    <i data-lucide="upload" size="16"></i>
+                    Carregar JSON
+                    <input type="file" id="file-input" accept=".json">
+                </label>
+            </div>
+        </header>
+
+        <!-- Stats Overview Row -->
+        <section class="stats-grid">
+            <!-- Included Credits -->
+            <div class="glass-card stat-card" id="card-credits-container">
+                <div class="stat-title" style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="pie-chart" size="16" style="color: var(--accent-orange);"></i>
+                        Créditos de IA Inclusos
+                    </span>
+                    <span id="badge-critico-credits" class="badge badge-red blink-text" style="display: none; font-size: 0.7rem; padding: 0.15rem 0.45rem;">CRÍTICO</span>
+                </div>
+                <div class="stat-value" id="val-credits-inclusos">0 / 0</div>
+                <div class="stat-sub">
+                    <span id="val-pct-credits">0% utilizado</span>
+                    <span id="val-credits-detalhe">Limite renova em breve</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="bar-credits" style="width: 0%; background: linear-gradient(90deg, var(--accent-orange), #fcd34d);"></div>
+                </div>
+            </div>
+
+            <!-- Additional Spending -->
+            <div class="glass-card stat-card blue" id="card-budget-container">
+                <div class="stat-title" style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="dollar-sign" size="16" style="color: var(--accent-blue);"></i>
+                        Uso Adicional Faturado
+                    </span>
+                    <span id="badge-critico-budget" class="badge badge-red blink-text" style="display: none; font-size: 0.7rem; padding: 0.15rem 0.45rem;">CRÍTICO</span>
+                </div>
+                <div class="stat-value" id="val-spent-adicional">$0.00</div>
+                <div class="stat-sub">
+                    <span>Orçamento Limite: <strong id="val-budget-adicional" style="color: var(--text-primary);">$0.00</strong></span>
+                    <span id="val-spent-pct">0%</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="bar-budget" style="width: 0%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));"></div>
+                </div>
+            </div>
+
+            <!-- Active Users -->
+            <div class="glass-card stat-card green">
+                <div class="stat-title">
+                    <i data-lucide="users" size="16" style="color: var(--accent-green);"></i>
+                    Usuários Ativos
+                </div>
+                <div class="stat-value" id="val-users-count">0</div>
+                <div class="stat-sub">
+                    <span>Mapeados neste ciclo de IA</span>
+                    <span style="color: var(--accent-green); display: flex; align-items: center; gap: 2px;">
+                        <i data-lucide="shield-check" size="12"></i> Ativos
+                    </span>
+                </div>
+            </div>
+
+            <!-- Most Expensive model -->
+            <div class="glass-card stat-card navy">
+                <div class="stat-title">
+                    <i data-lucide="zap" size="16" style="color: var(--accent-navy);"></i>
+                    Modelo Mais Consumido
+                </div>
+                <div class="stat-value" id="val-top-model" style="font-size: 1.5rem; padding-top: 0.3rem;">--</div>
+                <div class="stat-sub">
+                    <span>Modelo com maior volume de chamadas</span>
+                    <span id="val-top-model-credits">0 créditos</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Grid Charts and Tables -->
+        <div class="main-grid">
+            <!-- Left Chart -->
+            <div class="glass-card">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i data-lucide="bar-chart-3" style="color: var(--accent-blue);"></i>
+                        Consumo Consolidado por Modelo (Organização)
+                    </h2>
+                    <button class="btn-collapse" onclick="togglePanelCollapse(this)" title="Minimizar / Expandir">
+                        <i data-lucide="minus" size="16"></i>
+                    </button>
+                </div>
+                <div class="panel-collapse-content">
+                    <div class="chart-container">
+                        <canvas id="chart-models-bar"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Doughnut -->
+            <div class="glass-card">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i data-lucide="donut" style="color: var(--accent-orange);"></i>
+                        Distribuição de Créditos
+                    </h2>
+                    <button class="btn-collapse" onclick="togglePanelCollapse(this)" title="Minimizar / Expandir">
+                        <i data-lucide="minus" size="16"></i>
+                    </button>
+                </div>
+                <div class="panel-collapse-content">
+                    <div class="chart-container" style="height: 250px; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="chart-credits-donut" style="max-height: 100%;"></canvas>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <div>
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-orange); margin-right: 4px;"></span>
+                            Inclusos: <strong id="lbl-donut-inclusos">0</strong>
+                        </div>
+                        <div>
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-blue); margin-right: 4px;"></span>
+                            Adicionais: <strong id="lbl-donut-adicionais">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Models Summary breakdown -->
+        <section class="glass-card">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i data-lucide="cpu" style="color: var(--accent-blue);"></i>
+                    Lista Consolidada de Modelos de IA
+                </h2>
+                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <div class="search-container">
+                        <i data-lucide="search" size="14" class="search-icon"></i>
+                        <input type="text" id="search-model" class="search-input" placeholder="Filtrar por modelo...">
+                    </div>
+                    <button class="btn-collapse" onclick="togglePanelCollapse(this)" title="Minimizar / Expandir">
+                        <i data-lucide="minus" size="16"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="panel-collapse-content">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th>Créditos Inclusos</th>
+                                <th>Créditos Adicionais</th>
+                                <th>Custo Bruto Est.</th>
+                                <th>Cobrança Excedente</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-models-body">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Beautiful Pagination Controls for Models -->
+                <div class="pagination-container">
+                    <div class="pagination-info" id="models-pagination-label">
+                        Mostrando 0-0 de 0 modelos
+                    </div>
+                    <div class="pagination-buttons">
+                        <button class="btn-pagination" id="btn-models-page-prev" disabled>
+                            <i data-lucide="chevron-left" size="14"></i> Anterior
+                        </button>
+                        <button class="btn-pagination" id="btn-models-page-next" disabled>
+                            Próximo <i data-lucide="chevron-right" size="14"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Developers Breakdown Section -->
+        <section class="glass-card">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i data-lucide="code-2" style="color: var(--accent-orange);"></i>
+                    Consumo Granular por Desenvolvedor
+                </h2>
+                <div class="controls-row">
+                    <div class="search-container">
+                        <i data-lucide="search" size="14" class="search-icon"></i>
+                        <input type="text" id="search-user" class="search-input" placeholder="Buscar desenvolvedor...">
+                    </div>
+                    <select id="select-sort-users" class="select-sort">
+                        <option value="credits-desc">(Recomendado) Créditos Inclusos (Maior)</option>
+                        <option value="additional-desc">Cobrança Adicional (Maior)</option>
+                        <option value="name-asc">Nome (A - Z)</option>
+                    </select>
+                    <button class="btn-collapse" onclick="togglePanelCollapse(this)" title="Minimizar / Expandir">
+                        <i data-lucide="minus" size="16"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="panel-collapse-content">
+                <!-- Table Headers for Accordion Row Alignments -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1.2fr 1fr auto; padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); gap: 1rem;" class="user-header-hide-mobile">
+                    <div>Desenvolvedor</div>
+                    <div>Créditos Inclusos</div>
+                    <div>Créditos Excedentes</div>
+                    <div>Custo Bruto Est.</div>
+                    <div>Custo Adicional Billed</div>
+                    <div></div>
+                </div>
+
+                <div class="user-accordion" id="user-accordion-container">
+                    <!-- Filled by JS -->
+                </div>
+
+                <!-- Beautiful Pagination Controls -->
+                <div class="pagination-container">
+                    <div class="pagination-info" id="pagination-label">
+                        Mostrando 0-0 de 0 desenvolvedores
+                    </div>
+                    <div class="pagination-buttons">
+                        <button class="btn-pagination" id="btn-page-prev" disabled>
+                            <i data-lucide="chevron-left" size="14"></i> Anterior
+                        </button>
+                        <button class="btn-pagination" id="btn-page-next" disabled>
+                            Próximo <i data-lucide="chevron-right" size="14"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Professionalized Footer Explanation Section -->
+        <section class="footer-billing-explain card-collapsed">
+            <div class="panel-header" style="margin-bottom: 0;">
+                <h2 class="footer-explain-title">
+                    <i data-lucide="book-open" size="24" style="color: var(--accent-orange);"></i>
+                    Guia de Entendimento de Limites e Regras de Consumo
+                </h2>
+                <button class="btn-collapse" onclick="togglePanelCollapse(this)" title="Minimizar / Expandir">
+                    <i data-lucide="plus" size="16"></i>
+                </button>
+            </div>
+            <div class="panel-collapse-content collapsed" style="margin-top: 1.5rem;">
+                <div class="footer-explain-grid">
+                    <div class="explain-col">
+                        <div class="explain-col-header">
+                            <i data-lucide="cpu" size="18" style="color: var(--accent-blue);"></i>
+                            1. Consumos Especiais (Modelos Premium)
+                        </div>
+                        <span class="explain-col-badge active-badge">Claude Opus</span>
+                        <p class="explain-col-text">
+                            Modelos avançados como o <strong>Claude Opus</strong> são faturados de forma isolada, debitando diretamente no saldo financeiro (Uso Adicional em dólar) desde a primeira interação, sem descontar da franquia grátis padrão.
+                        </p>
+                    </div>
+                    <div class="explain-col">
+                        <div class="explain-col-header">
+                            <i data-lucide="credit-card" size="18" style="color: var(--accent-orange);"></i>
+                            2. Divisão de Contas e Orçamentos
+                        </div>
+                        <span class="explain-col-badge">Estrutura de Limites</span>
+                        <p class="explain-col-text">
+                            A organização possui <strong><span id="explain-total-credits">138.000</span> créditos inclusos</strong> (gratuitos por licença básica) e um orçamento pós-pago em dólar (<strong><span id="explain-budget-dollars">$200.00</span></strong> de limite extra). O saldo em dólar cobre tanto os modelos Premium quanto qualquer eventual transbordo do uso padrão.
+                        </p>
+                    </div>
+                    <div class="explain-col">
+                        <div class="explain-col-header">
+                            <i data-lucide="shield-alert" size="18" style="color: var(--accent-red);"></i>
+                            3. Recomendações de Continuidade
+                        </div>
+                        <span class="explain-col-badge" style="background: rgba(239, 68, 68, 0.08); color: var(--accent-red); border-color: rgba(239, 68, 68, 0.2);">Ação do Administrador</span>
+                        <p class="explain-col-text">
+                            Restam apenas <span id="explain-remaining-credits" style="font-weight: 700; color: var(--accent-red);">15</span> créditos da franquia padrão. Como o Uso Adicional está desativado (<em>"<span id="explain-additional-status">Not enabled</span>"</em>), os modelos comuns pararão em breve. Recomenda-se que o admin **Ative o Uso Adicional** no painel do GitHub para liberar o transbordo para os <strong><span id="explain-free-balance">$83.00</span></strong> livres de saldo.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Highlighted Explanation Card for Claude / Dollar Limit -->
+                <div style="margin-top: 1.5rem; padding: 1.5rem; background: #faf5ff; border: 1px solid rgba(139, 92, 246, 0.2); border-left: 5px solid #8b5cf6; border-radius: 12px; display: flex; gap: 1rem; align-items: flex-start; flex-direction: column;">
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <i data-lucide="help-circle" size="24" style="color: #8b5cf6; flex-shrink: 0;"></i>
+                        <h4 style="font-weight: 800; font-size: 1.1rem; color: var(--accent-navy); margin-bottom: 0;">Resumo Direto: O que acontece se o saldo acabar?</h4>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; margin-top: 0.5rem;">
+                        <div style="background: #ffffff; padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.15); border-left: 4px solid var(--accent-red);">
+                            <h5 style="font-weight: 800; font-size: 0.9rem; color: var(--accent-red); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="x-circle" size="16"></i> 1. Se o saldo em DÓLAR acabar:
+                            </h5>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; font-weight: 600;">
+                                O Claude Opus PARA imediatamente.
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.25rem;">
+                                <strong>Todas as outras IAs também param</strong>, porque seus créditos gratuitos da licença já acabaram (o consumo está em <span id="explain-summary-consumed" style="font-weight: 700;">137.984</span> de <span id="explain-summary-total" style="font-weight: 700;">138.000</span>). Sem dólar para cobrir o transbordo, tudo fica bloqueado.
+                            </p>
+                        </div>
+                        
+                        <div style="background: #ffffff; padding: 1rem; border-radius: 8px; border: 1px solid rgba(16, 140, 84, 0.15); border-left: 4px solid var(--accent-green);">
+                            <h5 style="font-weight: 800; font-size: 0.9rem; color: var(--accent-green); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="check-circle-2" size="16"></i> 2. Se tivesse apenas CRÉDITOS INCLUSOS (sem dólar):
+                            </h5>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; font-weight: 600;">
+                                Todas as IAs comuns funcionam normalmente.
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.25rem;">
+                                <strong>Mas o Claude Opus fica bloqueado (não funciona)</strong>, pois ele ignora a franquia gratuita e exige saldo financeiro em dólar ativo desde a primeira mensagem.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Default embedded data placeholder
+        const copilotData = /* DATA_PLACEHOLDER_START */ {
+    "dataGeracao": "2026-06-22T03:57:42.744Z",
+    "orcamentoGeral": {
+        "spent": "$117.00 spent",
+        "budget": "$200.00 budget"
+    },
+    "visaoGeralOrganizacao": {
+        "creditosInclusosConsumidos": "137,984",
+        "creditosInclusosTotal": "138,000",
+        "usoAdicionalStatus": "Not enabled"
+    },
+    "resumoConsolidadoModelos": [
+        {
+            "modelo": "Claude Opus 4.7",
+            "includedCredits": "50,923.93",
+            "additionalCredits": "3,860.38",
+            "grossAmount": "$547.84",
+            "additionalUsage": "$38.60"
+        },
+        {
+            "modelo": "Claude Sonnet 4.5",
+            "includedCredits": "19,718.62",
+            "additionalCredits": "27.02",
+            "grossAmount": "$197.46",
+            "additionalUsage": "$0.27"
+        },
+        {
+            "modelo": "Claude Opus 4.8",
+            "includedCredits": "11,658.96",
+            "additionalCredits": "4,198.79",
+            "grossAmount": "$158.58",
+            "additionalUsage": "$41.99"
+        },
+        {
+            "modelo": "Claude Opus 4.6",
+            "includedCredits": "12,907.55",
+            "additionalCredits": "2,780.61",
+            "grossAmount": "$156.88",
+            "additionalUsage": "$27.81"
+        },
+        {
+            "modelo": "Claude Sonnet 4.6",
+            "includedCredits": "14,225.79",
+            "additionalCredits": "82.34",
+            "grossAmount": "$143.08",
+            "additionalUsage": "$0.82"
+        },
+        {
+            "modelo": "Claude Fable 5",
+            "includedCredits": "13,930.60",
+            "additionalCredits": "0",
+            "grossAmount": "$139.31",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "GPT-5.5",
+            "includedCredits": "3,937.91",
+            "additionalCredits": "0",
+            "grossAmount": "$39.38",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "Claude Opus 4.5",
+            "includedCredits": "3,109.78",
+            "additionalCredits": "19.54",
+            "grossAmount": "$31.29",
+            "additionalUsage": "$0.20"
+        },
+        {
+            "modelo": "Auto: GPT-5.3-Codex",
+            "includedCredits": "1,621.26",
+            "additionalCredits": "100.26",
+            "grossAmount": "$17.22",
+            "additionalUsage": "$1.00"
+        },
+        {
+            "modelo": "Code Review model",
+            "includedCredits": "901.39",
+            "additionalCredits": "531.34",
+            "grossAmount": "$14.33",
+            "additionalUsage": "$5.31"
+        },
+        {
+            "modelo": "Coding Agent model",
+            "includedCredits": "1,337.30",
+            "additionalCredits": "0",
+            "grossAmount": "$13.37",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "GPT-5.3-Codex",
+            "includedCredits": "843.56",
+            "additionalCredits": "38.82",
+            "grossAmount": "$8.82",
+            "additionalUsage": "$0.39"
+        },
+        {
+            "modelo": "Claude Haiku 4.5",
+            "includedCredits": "760.04",
+            "additionalCredits": "17.00",
+            "grossAmount": "$7.77",
+            "additionalUsage": "$0.17"
+        },
+        {
+            "modelo": "Auto: Claude Sonnet 4.6",
+            "includedCredits": "643.29",
+            "additionalCredits": "12.49",
+            "grossAmount": "$6.56",
+            "additionalUsage": "$0.12"
+        },
+        {
+            "modelo": "GPT-5.4",
+            "includedCredits": "440.57",
+            "additionalCredits": "11.55",
+            "grossAmount": "$4.52",
+            "additionalUsage": "$0.12"
+        },
+        {
+            "modelo": "GPT-5.2-Codex",
+            "includedCredits": "401.51",
+            "additionalCredits": "0",
+            "grossAmount": "$4.02",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "Auto: Claude Haiku 4.5",
+            "includedCredits": "203.50",
+            "additionalCredits": "19.70",
+            "grossAmount": "$2.23",
+            "additionalUsage": "$0.20"
+        },
+        {
+            "modelo": "Gemini 3.5 Flash",
+            "includedCredits": "158.79",
+            "additionalCredits": "0",
+            "grossAmount": "$1.59",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "Auto: GPT-5.4",
+            "includedCredits": "137.16",
+            "additionalCredits": "0",
+            "grossAmount": "$1.37",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "Auto: GPT-5.4 mini",
+            "includedCredits": "55.43",
+            "additionalCredits": "0",
+            "grossAmount": "$0.55",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "Gemini 3 Flash",
+            "includedCredits": "53.46",
+            "additionalCredits": "0",
+            "grossAmount": "$0.53",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "GPT-5 mini",
+            "includedCredits": "9.83",
+            "additionalCredits": "0.50",
+            "grossAmount": "$0.10",
+            "additionalUsage": "$0.00"
+        },
+        {
+            "modelo": "Gemini 2.5 Pro",
+            "includedCredits": "3.94",
+            "additionalCredits": "0",
+            "grossAmount": "$0.04",
+            "additionalUsage": "$0.00"
+        }
+    ],
+    "detalheUsuarios": [
+        {
+            "usuario": "vitorsavickirentscars",
+            "totalIncludedCredits": "33,613.32",
+            "totalAdditionalCredits": "2,844.97",
+            "totalGrossAmount": "$364.58",
+            "totalAdditionalUsage": "$28.45",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "19,153.91",
+                    "additionalCredits": "0",
+                    "grossAmount": "$191.54",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Fable 5",
+                    "includedCredits": "13,666.26",
+                    "additionalCredits": "0",
+                    "grossAmount": "$136.66",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.8",
+                    "includedCredits": "0",
+                    "additionalCredits": "2,825.27",
+                    "grossAmount": "$28.25",
+                    "additionalUsage": "$28.25"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "792.58",
+                    "additionalCredits": "0",
+                    "grossAmount": "$7.93",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "0",
+                    "additionalCredits": "19.70",
+                    "grossAmount": "$0.20",
+                    "additionalUsage": "$0.20"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "0.57",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.01",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "GiovanniRentcars",
+            "totalIncludedCredits": "27,630.82",
+            "totalAdditionalCredits": "2,397.24",
+            "totalGrossAmount": "$300.28",
+            "totalAdditionalUsage": "$23.97",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "27,463.04",
+                    "additionalCredits": "2,278.86",
+                    "grossAmount": "$297.42",
+                    "additionalUsage": "$22.79"
+                },
+                {
+                    "modelo": "Code Review model",
+                    "includedCredits": "162.77",
+                    "additionalCredits": "87.90",
+                    "grossAmount": "$2.51",
+                    "additionalUsage": "$0.88"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "0",
+                    "additionalCredits": "27.42",
+                    "grossAmount": "$0.27",
+                    "additionalUsage": "$0.27"
+                },
+                {
+                    "modelo": "GPT-5 mini",
+                    "includedCredits": "5.01",
+                    "additionalCredits": "0.50",
+                    "grossAmount": "$0.06",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "0",
+                    "additionalCredits": "2.56",
+                    "grossAmount": "$0.03",
+                    "additionalUsage": "$0.03"
+                }
+            ]
+        },
+        {
+            "usuario": "ravialbuquerque",
+            "totalIncludedCredits": "18,399.60",
+            "totalAdditionalCredits": "1,210.05",
+            "totalGrossAmount": "$196.10",
+            "totalAdditionalUsage": "$12.10",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.8",
+                    "includedCredits": "9,563.09",
+                    "additionalCredits": "1,174.81",
+                    "grossAmount": "$107.38",
+                    "additionalUsage": "$11.75"
+                },
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "6,724.70",
+                    "additionalCredits": "0",
+                    "grossAmount": "$67.25",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.5",
+                    "includedCredits": "1,214.13",
+                    "additionalCredits": "0",
+                    "grossAmount": "$12.14",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "406.73",
+                    "additionalCredits": "0",
+                    "grossAmount": "$4.07",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.5",
+                    "includedCredits": "188.11",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.88",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.2-Codex",
+                    "includedCredits": "159.63",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.60",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Code Review model",
+                    "includedCredits": "72.28",
+                    "additionalCredits": "35.24",
+                    "grossAmount": "$1.08",
+                    "additionalUsage": "$0.35"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "55.77",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.56",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "15.16",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.15",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "lucas-rentcars",
+            "totalIncludedCredits": "5,703.34",
+            "totalAdditionalCredits": "2,779.92",
+            "totalGrossAmount": "$84.83",
+            "totalAdditionalUsage": "$27.80",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "5,699.41",
+                    "additionalCredits": "2,765.14",
+                    "grossAmount": "$84.65",
+                    "additionalUsage": "$27.65"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "0",
+                    "additionalCredits": "14.78",
+                    "grossAmount": "$0.15",
+                    "additionalUsage": "$0.15"
+                },
+                {
+                    "modelo": "Gemini 2.5 Pro",
+                    "includedCredits": "3.94",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.04",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "JeferscnPereira",
+            "totalIncludedCredits": "6,859.47",
+            "totalAdditionalCredits": "352.91",
+            "totalGrossAmount": "$72.12",
+            "totalAdditionalUsage": "$3.53",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "3,451.82",
+                    "additionalCredits": "0",
+                    "grossAmount": "$34.52",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "2,353.99",
+                    "additionalCredits": "294.19",
+                    "grossAmount": "$26.48",
+                    "additionalUsage": "$2.94"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "468.53",
+                    "additionalCredits": "0",
+                    "grossAmount": "$4.69",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Code Review model",
+                    "includedCredits": "241.94",
+                    "additionalCredits": "58.72",
+                    "grossAmount": "$3.01",
+                    "additionalUsage": "$0.59"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "228.43",
+                    "additionalCredits": "0",
+                    "grossAmount": "$2.28",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.2-Codex",
+                    "includedCredits": "70.14",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.70",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Coding Agent model",
+                    "includedCredits": "40.58",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.41",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4",
+                    "includedCredits": "4.04",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.04",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "luiz-rfreitas",
+            "totalIncludedCredits": "6,489.95",
+            "totalAdditionalCredits": "32.46",
+            "totalGrossAmount": "$65.22",
+            "totalAdditionalUsage": "$0.32",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "5,403.22",
+                    "additionalCredits": "32.46",
+                    "grossAmount": "$54.36",
+                    "additionalUsage": "$0.32"
+                },
+                {
+                    "modelo": "GPT-5.5",
+                    "includedCredits": "532.27",
+                    "additionalCredits": "0",
+                    "grossAmount": "$5.32",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "245.82",
+                    "additionalCredits": "0",
+                    "grossAmount": "$2.46",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.2-Codex",
+                    "includedCredits": "171.75",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.72",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "61.09",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.61",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "22.53",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.23",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Code Review model",
+                    "includedCredits": "21.30",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.21",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4 mini",
+                    "includedCredits": "14.27",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.14",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "9.43",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.09",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "7.05",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.07",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "1.21",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.01",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "thiago-youx",
+            "totalIncludedCredits": "4,741.16",
+            "totalAdditionalCredits": "1,636.82",
+            "totalGrossAmount": "$63.78",
+            "totalAdditionalUsage": "$16.37",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "4,370.44",
+                    "additionalCredits": "1,287.33",
+                    "grossAmount": "$56.58",
+                    "additionalUsage": "$12.87"
+                },
+                {
+                    "modelo": "Code Review model",
+                    "includedCredits": "236.21",
+                    "additionalCredits": "349.49",
+                    "grossAmount": "$5.86",
+                    "additionalUsage": "$3.49"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "75.78",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.76",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "33.35",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.33",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "16.88",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.17",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "8.50",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.09",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "edu-brandao",
+            "totalIncludedCredits": "6,035.54",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$60.36",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "4,164.48",
+                    "additionalCredits": "0",
+                    "grossAmount": "$41.64",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: Claude Sonnet 4.6",
+                    "includedCredits": "567.78",
+                    "additionalCredits": "0",
+                    "grossAmount": "$5.68",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "548.04",
+                    "additionalCredits": "0",
+                    "grossAmount": "$5.48",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Coding Agent model",
+                    "includedCredits": "211.27",
+                    "additionalCredits": "0",
+                    "grossAmount": "$2.11",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Code Review model",
+                    "includedCredits": "162.38",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.62",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Gemini 3.5 Flash",
+                    "includedCredits": "158.79",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.59",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "95.44",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.95",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Gemini 3 Flash",
+                    "includedCredits": "52.82",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.53",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4",
+                    "includedCredits": "39.47",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.39",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4 mini",
+                    "includedCredits": "35.05",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.35",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "thgrillorentcars",
+            "totalIncludedCredits": "5,623.64",
+            "totalAdditionalCredits": "0.51",
+            "totalGrossAmount": "$56.24",
+            "totalAdditionalUsage": "$0.01",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "3,636.60",
+                    "additionalCredits": "0",
+                    "grossAmount": "$36.37",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "1,578.37",
+                    "additionalCredits": "0",
+                    "grossAmount": "$15.78",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.8",
+                    "includedCredits": "305.68",
+                    "additionalCredits": "0",
+                    "grossAmount": "$3.06",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "43.45",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.43",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "41.69",
+                    "additionalCredits": "0.51",
+                    "grossAmount": "$0.42",
+                    "additionalUsage": "$0.01"
+                },
+                {
+                    "modelo": "GPT-5.5",
+                    "includedCredits": "17.84",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.18",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "sobralra",
+            "totalIncludedCredits": "3,888.82",
+            "totalAdditionalCredits": "8.47",
+            "totalGrossAmount": "$38.97",
+            "totalAdditionalUsage": "$0.08",
+            "modelos": [
+                {
+                    "modelo": "GPT-5.5",
+                    "includedCredits": "3,199.70",
+                    "additionalCredits": "0",
+                    "grossAmount": "$32.00",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Coding Agent model",
+                    "includedCredits": "408.64",
+                    "additionalCredits": "0",
+                    "grossAmount": "$4.09",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "153.53",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.54",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "72.69",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.73",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "35.35",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.35",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "18.91",
+                    "additionalCredits": "8.47",
+                    "grossAmount": "$0.27",
+                    "additionalUsage": "$0.08"
+                }
+            ]
+        },
+        {
+            "usuario": "LuizVargasRentCars",
+            "totalIncludedCredits": "2,322.32",
+            "totalAdditionalCredits": "27.02",
+            "totalGrossAmount": "$23.49",
+            "totalAdditionalUsage": "$0.27",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "2,265.90",
+                    "additionalCredits": "0",
+                    "grossAmount": "$22.66",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "55.60",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.56",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "0",
+                    "additionalCredits": "27.02",
+                    "grossAmount": "$0.27",
+                    "additionalUsage": "$0.27"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "0.81",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.01",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "LuizGustavoWT",
+            "totalIncludedCredits": "2,298.41",
+            "totalAdditionalCredits": "49.88",
+            "totalGrossAmount": "$23.48",
+            "totalAdditionalUsage": "$0.50",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "1,353.88",
+                    "additionalCredits": "49.88",
+                    "grossAmount": "$14.04",
+                    "additionalUsage": "$0.50"
+                },
+                {
+                    "modelo": "Claude Opus 4.8",
+                    "includedCredits": "675.37",
+                    "additionalCredits": "0",
+                    "grossAmount": "$6.75",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Fable 5",
+                    "includedCredits": "264.34",
+                    "additionalCredits": "0",
+                    "grossAmount": "$2.64",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5 mini",
+                    "includedCredits": "4.82",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.05",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "ericomeger-rentie",
+            "totalIncludedCredits": "2,048.10",
+            "totalAdditionalCredits": "94.68",
+            "totalGrossAmount": "$21.43",
+            "totalAdditionalUsage": "$0.95",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.8",
+                    "includedCredits": "1,038.19",
+                    "additionalCredits": "0",
+                    "grossAmount": "$10.38",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "524.49",
+                    "additionalCredits": "0",
+                    "grossAmount": "$5.24",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "338.17",
+                    "additionalCredits": "0",
+                    "grossAmount": "$3.38",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "13.39",
+                    "additionalCredits": "94.68",
+                    "grossAmount": "$1.08",
+                    "additionalUsage": "$0.95"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "91.57",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.92",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "21.60",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.22",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4",
+                    "includedCredits": "19.54",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.20",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Gemini 3 Flash",
+                    "includedCredits": "0.64",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.01",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "0.50",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.00",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "thales-gregory",
+            "totalIncludedCredits": "2,133.66",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$21.34",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "2,121.45",
+                    "additionalCredits": "0",
+                    "grossAmount": "$21.21",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "12.22",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.12",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "morghanasantos",
+            "totalIncludedCredits": "2,028.56",
+            "totalAdditionalCredits": "15.46",
+            "totalGrossAmount": "$20.44",
+            "totalAdditionalUsage": "$0.15",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "1,119.64",
+                    "additionalCredits": "15.46",
+                    "grossAmount": "$11.35",
+                    "additionalUsage": "$0.15"
+                },
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "670.86",
+                    "additionalCredits": "0",
+                    "grossAmount": "$6.71",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "173.79",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.74",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "61.64",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.62",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "2.63",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.03",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "taispg-rent",
+            "totalIncludedCredits": "1,779.29",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$17.79",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.5",
+                    "includedCredits": "1,779.29",
+                    "additionalCredits": "0",
+                    "grossAmount": "$17.79",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "carlosrentcars",
+            "totalIncludedCredits": "1,517.58",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$15.18",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "840.77",
+                    "additionalCredits": "0",
+                    "grossAmount": "$8.41",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Coding Agent model",
+                    "includedCredits": "676.81",
+                    "additionalCredits": "0",
+                    "grossAmount": "$6.77",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "lucasraes-rentcars",
+            "totalIncludedCredits": "1,073.19",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$10.73",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "960.52",
+                    "additionalCredits": "0",
+                    "grossAmount": "$9.61",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "98.10",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.98",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "10.06",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.10",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4",
+                    "includedCredits": "4.52",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.05",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "gabrielbertolazorent",
+            "totalIncludedCredits": "993.24",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$9.93",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "840.26",
+                    "additionalCredits": "0",
+                    "grossAmount": "$8.40",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "113.49",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.13",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "38.97",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.39",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "0.52",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.01",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "paulopgrents",
+            "totalIncludedCredits": "668.40",
+            "totalAdditionalCredits": "18.07",
+            "totalGrossAmount": "$6.86",
+            "totalAdditionalUsage": "$0.18",
+            "modelos": [
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "519.45",
+                    "additionalCredits": "5.58",
+                    "grossAmount": "$5.25",
+                    "additionalUsage": "$0.06"
+                },
+                {
+                    "modelo": "Auto: Claude Sonnet 4.6",
+                    "includedCredits": "75.50",
+                    "additionalCredits": "12.49",
+                    "grossAmount": "$0.88",
+                    "additionalUsage": "$0.12"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4",
+                    "includedCredits": "69.58",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.70",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4 mini",
+                    "includedCredits": "3.87",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.04",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "DidiegoFreitas",
+            "totalIncludedCredits": "545.22",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$5.45",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "545.22",
+                    "additionalCredits": "0",
+                    "grossAmount": "$5.45",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "ricardofariasg4",
+            "totalIncludedCredits": "113.90",
+            "totalAdditionalCredits": "212.34",
+            "totalGrossAmount": "$3.26",
+            "totalAdditionalUsage": "$2.12",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.8",
+                    "includedCredits": "0",
+                    "additionalCredits": "198.71",
+                    "grossAmount": "$1.99",
+                    "additionalUsage": "$1.99"
+                },
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "65.57",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.66",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "40.60",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.41",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "0",
+                    "additionalCredits": "11.40",
+                    "grossAmount": "$0.11",
+                    "additionalUsage": "$0.11"
+                },
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "7.72",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.08",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "0",
+                    "additionalCredits": "2.22",
+                    "grossAmount": "$0.02",
+                    "additionalUsage": "$0.02"
+                }
+            ]
+        },
+        {
+            "usuario": "nicolasserrato",
+            "totalIncludedCredits": "288.42",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$2.88",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "288.42",
+                    "additionalCredits": "0",
+                    "grossAmount": "$2.88",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "zagorentcars",
+            "totalIncludedCredits": "265.25",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$2.65",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "265.25",
+                    "additionalCredits": "0",
+                    "grossAmount": "$2.65",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "GuilhermeGirata2",
+            "totalIncludedCredits": "202.10",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$2.02",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.8",
+                    "includedCredits": "76.62",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.77",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "70.66",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.71",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Opus 4.7",
+                    "includedCredits": "54.82",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.55",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "renato-i-machado",
+            "totalIncludedCredits": "154.47",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$1.54",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.6",
+                    "includedCredits": "153.28",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.53",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "1.19",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.01",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "KelvisRentcars",
+            "totalIncludedCredits": "131.96",
+            "totalAdditionalCredits": "19.54",
+            "totalGrossAmount": "$1.51",
+            "totalAdditionalUsage": "$0.20",
+            "modelos": [
+                {
+                    "modelo": "Claude Opus 4.5",
+                    "includedCredits": "116.36",
+                    "additionalCredits": "19.54",
+                    "grossAmount": "$1.36",
+                    "additionalUsage": "$0.20"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "15.11",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.15",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "0.49",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.00",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "rent-marconurmberg",
+            "totalIncludedCredits": "106.77",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$1.07",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "106.77",
+                    "additionalCredits": "0",
+                    "grossAmount": "$1.07",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "lourainysantos",
+            "totalIncludedCredits": "73.40",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.73",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "73.40",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.73",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "Victor-Vechi",
+            "totalIncludedCredits": "71.10",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.71",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "55.92",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.56",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "12.95",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.13",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.4 mini",
+                    "includedCredits": "2.24",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.02",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "letlm-rent",
+            "totalIncludedCredits": "59.36",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.59",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Auto: Claude Haiku 4.5",
+                    "includedCredits": "45.63",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.46",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Claude Sonnet 4.5",
+                    "includedCredits": "7.33",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.07",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Auto: GPT-5.3-Codex",
+                    "includedCredits": "6.40",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.06",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "cleitonmlimarentcars",
+            "totalIncludedCredits": "55.25",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.55",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Sonnet 4.6",
+                    "includedCredits": "50.74",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.51",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "Code Review model",
+                    "includedCredits": "4.51",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.05",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "RogerMesquita",
+            "totalIncludedCredits": "34.73",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.35",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "Claude Haiku 4.5",
+                    "includedCredits": "23.08",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.23",
+                    "additionalUsage": "$0.00"
+                },
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "11.65",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.12",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "cleberson-vosilk",
+            "totalIncludedCredits": "12.56",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.13",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "12.56",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.13",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "DiegopalmaRentcars",
+            "totalIncludedCredits": "13.14",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.13",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "13.14",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.13",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "yamandarodrigues",
+            "totalIncludedCredits": "5.27",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.05",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "GPT-5.4",
+                    "includedCredits": "5.27",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.05",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        },
+        {
+            "usuario": "nathaliaguedes2",
+            "totalIncludedCredits": "2.84",
+            "totalAdditionalCredits": "0",
+            "totalGrossAmount": "$0.03",
+            "totalAdditionalUsage": "$0.00",
+            "modelos": [
+                {
+                    "modelo": "GPT-5.3-Codex",
+                    "includedCredits": "2.84",
+                    "additionalCredits": "0",
+                    "grossAmount": "$0.03",
+                    "additionalUsage": "$0.00"
+                }
+            ]
+        }
+    ]
+} /* DATA_PLACEHOLDER_END */;
+
+        let currentData = { ...copilotData };
+        let barChartInstance = null;
+        let donutChartInstance = null;
+
+        // Pagination State (Developers)
+        let currentPage = 1;
+        const pageSize = 10;
+        let filteredUsersList = [];
+
+        // Pagination State (Models)
+        let currentModelsPage = 1;
+        const modelsPageSize = 10;
+        let filteredModelsList = [];
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Helper to format float numbers
+        function parseToFloat(val) {
+            if (!val) return 0;
+            return parseFloat(val.toString().replace(/[^\d\.\-]/g, '').replace(/,/g, '')) || 0;
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Render Dashboard
+        function renderDashboard(data) {
+            currentData = data;
+
+            // Header Generation Date
+            if (data.dataGeracao) {
+                const date = new Date(data.dataGeracao);
+                document.getElementById('lbl-data-geracao').innerText = date.toLocaleString('pt-BR');
+            }
+
+            // Overview Stats Card: Included Credits
+            let totalInclusosConsumidos = 0;
+            let totalInclusosLimite = 138000; // default cap
+            
+            if (data.visaoGeralOrganizacao) {
+                totalInclusosConsumidos = parseToFloat(data.visaoGeralOrganizacao.creditosInclusosConsumidos || "137984");
+                totalInclusosLimite = parseToFloat(data.visaoGeralOrganizacao.creditosInclusosTotal || "138000");
+            }
+            
+            const pctInclusos = Math.min((totalInclusosConsumidos / totalInclusosLimite) * 100, 100);
+            document.getElementById('val-credits-inclusos').innerText = `${formatNumber(totalInclusosConsumidos)} / ${formatNumber(totalInclusosLimite)}`;
+            document.getElementById('val-pct-credits').innerText = `${pctInclusos.toFixed(2)}% Utilizado`;
+            document.getElementById('bar-credits').style.width = `${pctInclusos}%`;
+
+            // Blinking warning if included credits are >= 95% utilized
+            const cardCredits = document.getElementById('card-credits-container');
+            const badgeCredits = document.getElementById('badge-critico-credits');
+            const barCredits = document.getElementById('bar-credits');
+            if (pctInclusos >= 95) {
+                if (cardCredits) cardCredits.classList.add('warning-pulse');
+                if (badgeCredits) badgeCredits.style.display = 'inline-flex';
+                if (barCredits) barCredits.style.background = 'linear-gradient(90deg, var(--accent-red), #f87171)';
+            } else {
+                if (cardCredits) cardCredits.classList.remove('warning-pulse');
+                if (badgeCredits) badgeCredits.style.display = 'none';
+                if (barCredits) barCredits.style.background = 'linear-gradient(90deg, var(--accent-orange), #fcd34d)';
+            }
+
+            // Next Renewal Date calculation based on dataGeracao
+            const elCreditsDetalhe = document.getElementById('val-credits-detalhe');
+            if (data.dataGeracao && elCreditsDetalhe) {
+                const dateGen = new Date(data.dataGeracao);
+                // Assume monthly renewal on the 1st of the next month
+                let nextRenewalYear = dateGen.getFullYear();
+                let nextRenewalMonth = dateGen.getMonth() + 1;
+                if (nextRenewalMonth > 11) {
+                    nextRenewalMonth = 0;
+                    nextRenewalYear += 1;
+                }
+                const nextRenewalDate = new Date(nextRenewalYear, nextRenewalMonth, 1);
+                elCreditsDetalhe.innerHTML = `Renovação: <strong>${nextRenewalDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</strong>`;
+            } else if (elCreditsDetalhe) {
+                elCreditsDetalhe.innerText = 'Renovação todo dia 01';
+            }
+
+            // Overview Stats Card: Additional Spending
+            let spentAdicional = 0;
+            let budgetAdicional = 200; // default cap
+
+            if (data.orcamentoGeral) {
+                spentAdicional = parseToFloat(data.orcamentoGeral.spent || "117.00");
+                budgetAdicional = parseToFloat(data.orcamentoGeral.budget || "200.00");
+            }
+
+            const pctBudget = budgetAdicional > 0 ? Math.min((spentAdicional / budgetAdicional) * 100, 100) : 0;
+            document.getElementById('val-spent-adicional').innerText = `$${spentAdicional.toFixed(2)}`;
+            document.getElementById('val-budget-adicional').innerText = `$${budgetAdicional.toFixed(2)}`;
+            document.getElementById('val-spent-pct').innerText = `${pctBudget.toFixed(1)}%`;
+            document.getElementById('bar-budget').style.width = `${pctBudget}%`;
+
+            // Blinking warning if dollar budget is >= 95% utilized
+            const cardBudget = document.getElementById('card-budget-container');
+            const badgeBudget = document.getElementById('badge-critico-budget');
+            const barBudget = document.getElementById('bar-budget');
+            if (pctBudget >= 95) {
+                if (cardBudget) cardBudget.classList.add('warning-pulse');
+                if (badgeBudget) badgeBudget.style.display = 'inline-flex';
+                if (barBudget) barBudget.style.background = 'linear-gradient(90deg, var(--accent-red), #f87171)';
+            } else {
+                if (cardBudget) cardBudget.classList.remove('warning-pulse');
+                if (badgeBudget) badgeBudget.style.display = 'none';
+                if (barBudget) barBudget.style.background = 'linear-gradient(90deg, var(--accent-blue), var(--accent-green))';
+            }
+
+            // Update Dynamic Explanation Spans
+            const formatCredits = (num) => Math.round(num).toLocaleString('pt-BR');
+            const formatDollars = (num) => `$${num.toFixed(2)}`;
+
+            // Section 2 Spans
+            const elTotalCredits = document.getElementById('explain-total-credits');
+            if (elTotalCredits) elTotalCredits.innerText = formatCredits(totalInclusosLimite);
+            
+            const elBudgetDollars = document.getElementById('explain-budget-dollars');
+            if (elBudgetDollars) elBudgetDollars.innerText = formatDollars(budgetAdicional);
+
+            // Section 3 Spans
+            const remainingCredits = Math.max(0, totalInclusosLimite - totalInclusosConsumidos);
+            const elRemainingCredits = document.getElementById('explain-remaining-credits');
+            if (elRemainingCredits) {
+                elRemainingCredits.innerText = formatCredits(remainingCredits);
+                if (remainingCredits < 100) {
+                    elRemainingCredits.style.color = 'var(--accent-red)';
+                } else {
+                    elRemainingCredits.style.color = 'var(--text-primary)';
+                }
+            }
+
+            const elAdditionalStatus = document.getElementById('explain-additional-status');
+            if (elAdditionalStatus) {
+                const status = data.visaoGeralOrganizacao ? data.visaoGeralOrganizacao.usoAdicionalStatus : "Not enabled";
+                elAdditionalStatus.innerText = status;
+                if (status === "Enabled") {
+                    elAdditionalStatus.style.color = "var(--accent-green)";
+                    elAdditionalStatus.style.fontWeight = "bold";
+                } else {
+                    elAdditionalStatus.style.color = "var(--accent-red)";
+                    elAdditionalStatus.style.fontWeight = "bold";
+                }
+            }
+
+            const freeBalance = Math.max(0, budgetAdicional - spentAdicional);
+            const elFreeBalance = document.getElementById('explain-free-balance');
+            if (elFreeBalance) elFreeBalance.innerText = formatDollars(freeBalance);
+
+            // Violet Highlighted Summary Card Spans
+            const elSummaryConsumed = document.getElementById('explain-summary-consumed');
+            if (elSummaryConsumed) elSummaryConsumed.innerText = formatCredits(totalInclusosConsumidos);
+
+            const elSummaryTotal = document.getElementById('explain-summary-total');
+            if (elSummaryTotal) elSummaryTotal.innerText = formatCredits(totalInclusosLimite);
+
+            // Active Users Count
+            const users = data.detalheUsuarios || [];
+            document.getElementById('val-users-count').innerText = users.length;
+
+            // Find Top Model Consumed
+            let topModelName = "Nenhum";
+            let topModelCredits = 0;
+            
+            if (data.resumoConsolidadoModelos && data.resumoConsolidadoModelos.length > 0) {
+                const models = [...data.resumoConsolidadoModelos];
+                models.sort((a, b) => {
+                    const totalA = parseToFloat(a.includedCredits) + parseToFloat(a.additionalCredits);
+                    const totalB = parseToFloat(b.includedCredits) + parseToFloat(b.additionalCredits);
+                    return totalB - totalA;
+                });
+                topModelName = models[0].modelo;
+                topModelCredits = parseToFloat(models[0].includedCredits) + parseToFloat(models[0].additionalCredits);
+            }
+            document.getElementById('val-top-model').innerText = topModelName;
+            document.getElementById('val-top-model-credits').innerText = `${formatNumber(topModelCredits)} créditos`;
+
+            // Reset pagination to first page
+            currentPage = 1;
+            currentModelsPage = 1;
+
+            // Render Consolidate Models Table
+            renderModelsTable();
+
+            // Refresh users list and sort/render
+            processAndRenderUsers();
+
+            // Render Charts
+            renderCharts();
+        }
+
+        // Render Models Table with filter and 10-row pagination
+        function renderModelsTable() {
+            const tbody = document.getElementById('tbl-models-body');
+            tbody.innerHTML = '';
+            
+            const filterText = document.getElementById('search-model').value.toLowerCase();
+            const models = currentData.resumoConsolidadoModelos || [];
+
+            filteredModelsList = models.filter(m => m.modelo.toLowerCase().includes(filterText));
+
+            const totalRecords = filteredModelsList.length;
+
+            if (totalRecords === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Nenhum modelo encontrado</td></tr>`;
+                updateModelsPaginationControls(0, 0, 0);
+                return;
+            }
+
+            const startIndex = (currentModelsPage - 1) * modelsPageSize;
+            const endIndex = Math.min(startIndex + modelsPageSize, totalRecords);
+            const paginatedModels = filteredModelsList.slice(startIndex, endIndex);
+
+            paginatedModels.forEach(m => {
+                const tr = document.createElement('tr');
+                const addCredits = parseToFloat(m.additionalCredits);
+                const addBilled = parseToFloat(m.additionalUsage);
+
+                tr.innerHTML = `
+                    <td style="font-weight: 700; color: var(--accent-navy);">${m.modelo}</td>
+                    <td><span class="badge badge-orange">${formatNumber(parseToFloat(m.includedCredits))}</span></td>
+                    <td><span class="badge ${addCredits > 0 ? 'badge-yellow' : 'badge-blue'}">${formatNumber(addCredits)}</span></td>
+                    <td>${m.grossAmount || '$0.00'}</td>
+                    <td><strong style="color: ${addBilled > 0 ? 'var(--accent-navy)' : 'var(--text-muted)'};">${m.additionalUsage || '$0.00'}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateModelsPaginationControls(startIndex + 1, endIndex, totalRecords);
+        }
+
+        // Update Models Pagination buttons and label
+        function updateModelsPaginationControls(start, end, total) {
+            const label = document.getElementById('models-pagination-label');
+            const btnPrev = document.getElementById('btn-models-page-prev');
+            const btnNext = document.getElementById('btn-models-page-next');
+
+            if (total === 0) {
+                label.innerText = "Mostrando 0-0 de 0 modelos";
+                btnPrev.disabled = true;
+                btnNext.disabled = true;
+                return;
+            }
+
+            label.innerText = `Mostrando ${start}-${end} de ${total} modelos`;
+            btnPrev.disabled = (currentModelsPage === 1);
+            const totalPages = Math.ceil(total / modelsPageSize);
+            btnNext.disabled = (currentModelsPage >= totalPages);
+        }
+
+        // Process, Filter and Sort Users before rendering paginated
+        function processAndRenderUsers() {
+            const filterText = document.getElementById('search-user').value.toLowerCase();
+            const sortBy = document.getElementById('select-sort-users').value;
+            const users = [...(currentData.detalheUsuarios || [])];
+
+            // 1. Filter
+            filteredUsersList = users.filter(u => u.usuario.toLowerCase().includes(filterText));
+
+            // 2. Sort
+            filteredUsersList.sort((a, b) => {
+                if (sortBy === 'credits-desc') {
+                    return parseToFloat(b.totalIncludedCredits) - parseToFloat(a.totalIncludedCredits);
+                } else if (sortBy === 'additional-desc') {
+                    return parseToFloat(b.totalAdditionalUsage) - parseToFloat(a.totalAdditionalUsage);
+                } else if (sortBy === 'name-asc') {
+                    return a.usuario.localeCompare(b.usuario);
+                }
+                return 0;
+            });
+
+            currentPage = 1;
+            renderUsersAccordion();
+        }
+
+        // Render Users Accordion with Pagination (10 per page)
+        function renderUsersAccordion() {
+            const container = document.getElementById('user-accordion-container');
+            container.innerHTML = '';
+
+            const totalRecords = filteredUsersList.length;
+            const totalPages = Math.ceil(totalRecords / pageSize);
+
+            if (totalRecords === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 3rem;">Nenhum desenvolvedor mapeado</div>`;
+                updatePaginationControls(0, 0, 0);
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalRecords);
+            const paginatedUsers = filteredUsersList.slice(startIndex, endIndex);
+
+            paginatedUsers.forEach((u) => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+
+                const firstChar = u.usuario.charAt(0);
+                const addCost = parseToFloat(u.totalAdditionalUsage);
+                const grossCost = parseToFloat(u.totalGrossAmount);
+
+                userItem.innerHTML = `
+                    <div class="user-header" onclick="toggleAccordion(this)">
+                        <div class="user-name-cell">
+                            <div class="avatar">${firstChar}</div>
+                            <span>${u.usuario}</span>
+                        </div>
+                        <div class="user-header-hide-mobile"><span class="badge badge-orange">${formatNumber(parseToFloat(u.totalIncludedCredits))}</span></div>
+                        <div class="user-header-hide-mobile"><span class="badge ${parseToFloat(u.totalAdditionalCredits) > 0 ? 'badge-yellow' : 'badge-blue'}">${formatNumber(parseToFloat(u.totalAdditionalCredits))}</span></div>
+                        <div class="user-header-hide-mobile">${u.totalGrossAmount || '$0.00'}</div>
+                        <div><strong style="color: ${addCost > 0 ? 'var(--accent-blue)' : 'var(--text-muted)'};">${u.totalAdditionalUsage || '$0.00'}</strong></div>
+                        <div><i data-lucide="chevron-down" size="18" style="color: var(--text-muted); transition: transform 0.2s;"></i></div>
+                    </div>
+                    <div class="user-content">
+                        <div class="user-inner-details">
+                            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--accent-blue); margin-bottom: 0.75rem; letter-spacing: 0.5px;">Breakdown de Modelos do Desenvolvedor</h4>
+                            <div class="table-wrapper">
+                                <table style="background: #ffffff; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <thead>
+                                        <tr style="background: #f8fafc;">
+                                            <th>Modelo Utilizado</th>
+                                            <th>Créditos Inclusos</th>
+                                            <th>Créditos Adicionais</th>
+                                            <th>Custo Bruto Est.</th>
+                                            <th>Cobrança Excedente</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${u.modelos.map(m => `
+                                            <tr>
+                                                <td style="font-weight: 600; color: var(--accent-navy);">${m.modelo}</td>
+                                                <td><span class="badge badge-orange">${formatNumber(parseToFloat(m.includedCredits))}</span></td>
+                                                <td><span class="badge ${parseToFloat(m.additionalCredits) > 0 ? 'badge-yellow' : 'badge-blue'}">${formatNumber(parseToFloat(m.additionalCredits))}</span></td>
+                                                <td>${m.grossAmount || '$0.00'}</td>
+                                                <td><strong style="color: ${parseToFloat(m.additionalUsage) > 0 ? 'var(--accent-blue)' : 'var(--text-muted)'};">${m.additionalUsage || '$0.00'}</strong></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(userItem);
+            });
+
+            updatePaginationControls(startIndex + 1, endIndex, totalRecords);
+            lucide.createIcons();
+        }
+
+        // Update Pagination buttons and label
+        function updatePaginationControls(start, end, total) {
+            const label = document.getElementById('pagination-label');
+            const btnPrev = document.getElementById('btn-page-prev');
+            const btnNext = document.getElementById('btn-page-next');
+
+            if (total === 0) {
+                label.innerText = "Mostrando 0-0 de 0 desenvolvedores";
+                btnPrev.disabled = true;
+                btnNext.disabled = true;
+                return;
+            }
+
+            label.innerText = `Mostrando ${start}-${end} de ${total} desenvolvedores`;
+            btnPrev.disabled = (currentPage === 1);
+            const totalPages = Math.ceil(total / pageSize);
+            btnNext.disabled = (currentPage >= totalPages);
+        }
+
+        // Toggle user accordion row
+        window.toggleAccordion = function(element) {
+            const userContent = element.nextElementSibling;
+            const icon = element.querySelector('[data-lucide="chevron-down"]');
+            
+            userContent.classList.toggle('open');
+            
+            if (userContent.classList.contains('open')) {
+                icon.style.transform = 'rotate(180deg)';
+                icon.style.color = 'var(--accent-navy)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+                icon.style.color = 'var(--text-muted)';
+            }
+        };
+
+        // Render charts via Chart.js
+        function renderCharts() {
+            // 1. Models Bar Chart
+            const ctxBar = document.getElementById('chart-models-bar').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+
+            const models = currentData.resumoConsolidadoModelos || [];
+            const sortedModelsForChart = [...models].sort((a,b) => {
+                const totalA = parseToFloat(a.includedCredits) + parseToFloat(a.additionalCredits);
+                const totalB = parseToFloat(b.includedCredits) + parseToFloat(b.additionalCredits);
+                return totalB - totalA;
+            }).slice(0, 8); // take top 8 models for display
+
+            const labels = sortedModelsForChart.map(m => m.modelo);
+            const dataIncluded = sortedModelsForChart.map(m => parseToFloat(m.includedCredits));
+            const dataAdditional = sortedModelsForChart.map(m => parseToFloat(m.additionalCredits));
+
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Créditos Inclusos',
+                            data: dataIncluded,
+                            backgroundColor: 'rgba(255, 168, 0, 0.85)', // Rentcars Warm Yellow/Orange
+                            borderColor: '#ffa800',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Créditos Adicionais',
+                            data: dataAdditional,
+                            backgroundColor: 'rgba(0, 118, 255, 0.85)', // Rentcars Blue
+                            borderColor: '#0076FF',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            labels: { color: '#475569', font: { family: 'Plus Jakarta Sans', weight: '700' } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans' } }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { color: '#475569', font: { family: 'Plus Jakarta Sans', weight: '600' } }
+                        }
+                    }
+                }
+            });
+
+            // 2. Credits Donut Chart
+            const ctxDonut = document.getElementById('chart-credits-donut').getContext('2d');
+            if (donutChartInstance) donutChartInstance.destroy();
+
+            let sumInclusos = 0;
+            let sumAdicionais = 0;
+
+            models.forEach(m => {
+                sumInclusos += parseToFloat(m.includedCredits);
+                sumAdicionais += parseToFloat(m.additionalCredits);
+            });
+
+            document.getElementById('lbl-donut-inclusos').innerText = formatNumber(sumInclusos);
+            document.getElementById('lbl-donut-adicionais').innerText = formatNumber(sumAdicionais);
+
+            donutChartInstance = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Créditos Inclusos', 'Créditos Adicionais'],
+                    datasets: [{
+                        data: [sumInclusos, sumAdicionais],
+                        backgroundColor: [
+                            'rgba(255, 168, 0, 0.85)', // Rentcars Orange/Yellow
+                            'rgba(0, 118, 255, 0.85)'   // Rentcars Blue
+                        ],
+                        borderColor: ['#ffa800', '#0076FF'],
+                        borderWidth: 1,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Toggle panel body collapse
+        window.togglePanelCollapse = function(button) {
+            const card = button.closest('.glass-card, .footer-billing-explain');
+            const content = card.querySelector('.panel-collapse-content');
+            content.classList.toggle('collapsed');
+            
+            // Toggle card-collapsed class to adjust padding smoothly
+            card.classList.toggle('card-collapsed', content.classList.contains('collapsed'));
+            
+            const icon = button.querySelector('[data-lucide]');
+            if (content.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'plus');
+            } else {
+                icon.setAttribute('data-lucide', 'minus');
+            }
+            lucide.createIcons();
+        };
+
+        // Handle JSON File Input manually
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const parsedData = JSON.parse(evt.target.result);
+                    if (parsedData.orcamentoGeral && parsedData.detalheUsuarios) {
+                        renderDashboard(parsedData);
+                    } else {
+                        alert("O formato do arquivo JSON selecionado não é válido para o dashboard do Copilot.");
+                    }
+                } catch (err) {
+                    alert("Erro ao decodificar o arquivo JSON: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Date Period Selector handler
+        document.getElementById('filter-period').addEventListener('change', function(e) {
+            const val = e.target.value;
+            if (val === 'all') {
+                alert("Simulação histórica: Você está visualizando o snapshot do ciclo atual (" + new Date(currentData.dataGeracao).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}) + ").\n\nCada arquivo JSON exportado representa o faturamento acumulado de um mês específico. Para comparar períodos passados, basta carregar o arquivo JSON do mês correspondente pelo botão 'Carregar JSON'!");
+                e.target.value = 'current'; // reset back to current
+            }
+        });
+
+        // Event listeners for Pagination (Developers)
+        document.getElementById('btn-page-prev').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderUsersAccordion();
+            }
+        });
+
+        document.getElementById('btn-page-next').addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredUsersList.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderUsersAccordion();
+            }
+        });
+
+        // Event listeners for Pagination (Models)
+        document.getElementById('btn-models-page-prev').addEventListener('click', () => {
+            if (currentModelsPage > 1) {
+                currentModelsPage--;
+                renderModelsTable();
+            }
+        });
+
+        document.getElementById('btn-models-page-next').addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredModelsList.length / modelsPageSize);
+            if (currentModelsPage < totalPages) {
+                currentModelsPage++;
+                renderModelsTable();
+            }
+        });
+
+        // Event listeners for Filters & Sorting
+        document.getElementById('search-model').addEventListener('input', () => {
+            currentModelsPage = 1;
+            renderModelsTable();
+        });
+        document.getElementById('search-user').addEventListener('input', processAndRenderUsers);
+        document.getElementById('select-sort-users').addEventListener('change', processAndRenderUsers);
+
+        // Initial Boot
+        renderDashboard(copilotData);
+    </script>
+</body>
+</html>
