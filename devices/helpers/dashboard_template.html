@@ -682,6 +682,53 @@
             color: var(--accent-red) !important;
             border: 1px solid rgba(239, 68, 68, 0.3) !important;
         }
+
+        /* Premium Calculation Tooltips */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: help;
+        }
+
+        .tooltip-box {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            background: #0f1c3f; /* Rentcars Dark Navy */
+            color: #ffffff;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(15, 28, 63, 0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 999;
+            text-align: left;
+            border: 1px solid rgba(255, 168, 0, 0.2);
+        }
+
+        .tooltip-box::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #0f1c3f transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-box {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body>
@@ -1335,7 +1382,26 @@
                         <span class="badge badge-orange">${formatNumber(totalCredits)}</span>
                         ${addCredits > 0 ? `<span style="font-size:0.75rem; color: var(--text-secondary); margin-left: 4px;">(${formatNumber(addCredits)} extras)</span>` : ''}
                     </td>
-                    <td>${m.grossAmount || '$0.00'}</td>
+                    <td>
+                        <div class="tooltip-container">
+                            <span>${m.grossAmount || '$0.00'}</span>
+                            <i data-lucide="info" size="13" style="color: var(--text-muted); cursor: help;"></i>
+                            <div class="tooltip-box">
+                                <div style="font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 0.5rem; padding-bottom: 0.25rem; color: var(--accent-orange); display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="calculator" size="14"></i> Memória de Cálculo
+                                </div>
+                                <div style="margin-bottom: 0.35rem;">
+                                    <strong>Consumo Total:</strong> ${formatNumber(totalCredits)} créditos × $0.01 = $${(totalCredits * 0.01).toFixed(2)} (de tabela)
+                                </div>
+                                <div style="margin-bottom: 0.35rem; color: rgba(255,255,255,0.7);">
+                                    <strong>Coberto (Grátis):</strong> ${formatNumber(incCredits)} créditos ($0.00)
+                                </div>
+                                <div style="color: ${addCredits > 0 ? '#fca5a5' : 'rgba(255,255,255,0.7)'};">
+                                    <strong>Excedente (Extra):</strong> ${formatNumber(addCredits)} créditos ($${addBilled.toFixed(2)})
+                                </div>
+                            </div>
+                        </div>
+                    </td>
                     <td>
                         <strong style="color: ${addBilled > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
                             ${m.additionalUsage || '$0.00'}
@@ -1431,7 +1497,26 @@
                             <span class="badge badge-orange">${formatNumber(totalUserCredits)}</span>
                             ${addUserCredits > 0 ? `<span style="font-size:0.75rem; color: var(--text-secondary); margin-left: 4px;">(${formatNumber(addUserCredits)} extras)</span>` : ''}
                         </div>
-                        <div class="user-header-hide-mobile">${u.totalGrossAmount || '$0.00'}</div>
+                        <div class="user-header-hide-mobile" onclick="event.stopPropagation()">
+                            <div class="tooltip-container">
+                                <span>${u.totalGrossAmount || '$0.00'}</span>
+                                <i data-lucide="info" size="13" style="color: var(--text-muted); cursor: help;"></i>
+                                <div class="tooltip-box">
+                                    <div style="font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 0.5rem; padding-bottom: 0.25rem; color: var(--accent-orange); display: flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="calculator" size="14"></i> Memória de Cálculo
+                                    </div>
+                                    <div style="margin-bottom: 0.35rem;">
+                                        <strong>Consumo Total:</strong> ${formatNumber(totalUserCredits)} créditos × $0.01 = $${(totalUserCredits * 0.01).toFixed(2)} (de tabela)
+                                    </div>
+                                    <div style="margin-bottom: 0.35rem; color: rgba(255,255,255,0.7);">
+                                        <strong>Coberto (Grátis):</strong> ${formatNumber(incUserCredits)} créditos ($0.00)
+                                    </div>
+                                    <div style="color: ${addUserCredits > 0 ? '#fca5a5' : 'rgba(255,255,255,0.7)'};">
+                                        <strong>Excedente (Extra):</strong> ${formatNumber(addUserCredits)} créditos ($${addCost.toFixed(2)})
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div>
                             <strong style="color: ${addCost > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
                                 ${u.totalAdditionalUsage || '$0.00'}
@@ -1466,7 +1551,26 @@
                                                     <span class="badge badge-orange">${formatNumber(totalM)}</span>
                                                     ${addM > 0 ? `<span style="font-size:0.75rem; color: var(--text-secondary); margin-left: 4px;">(${formatNumber(addM)} extras)</span>` : ''}
                                                 </td>
-                                                <td>${m.grossAmount || '$0.00'}</td>
+                                                <td>
+                                                    <div class="tooltip-container">
+                                                        <span>${m.grossAmount || '$0.00'}</span>
+                                                        <i data-lucide="info" size="13" style="color: var(--text-muted); cursor: help;"></i>
+                                                        <div class="tooltip-box">
+                                                            <div style="font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 0.5rem; padding-bottom: 0.25rem; color: var(--accent-orange); display: flex; align-items: center; gap: 4px;">
+                                                                <i data-lucide="calculator" size="14"></i> Memória de Cálculo
+                                                            </div>
+                                                            <div style="margin-bottom: 0.35rem;">
+                                                                <strong>Consumo Total:</strong> ${formatNumber(totalM)} créditos × $0.01 = $${(totalM * 0.01).toFixed(2)} (de tabela)
+                                                            </div>
+                                                            <div style="margin-bottom: 0.35rem; color: rgba(255,255,255,0.7);">
+                                                                <strong>Coberto (Grátis):</strong> ${formatNumber(incM)} créditos ($0.00)
+                                                            </div>
+                                                            <div style="color: ${addM > 0 ? '#fca5a5' : 'rgba(255,255,255,0.7)'};">
+                                                                <strong>Excedente (Extra):</strong> ${formatNumber(addM)} créditos ($${addUsageM.toFixed(2)})
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 <td>
                                                     <strong style="color: ${addUsageM > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
                                                         ${m.additionalUsage || '$0.00'}
