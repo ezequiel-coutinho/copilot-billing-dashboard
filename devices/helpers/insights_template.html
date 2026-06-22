@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rentcars | Copilot AI — Insights & Alertas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent-blue: #0076FF;
+            --accent-orange: #ffa800;
+            --accent-green: #108c54;
+            --accent-red: #ef4444;
+            --accent-navy: #0f1c3f;
+            --font-family: 'Plus Jakarta Sans', sans-serif;
+            --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+            --card-shadow-hover: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            line-height: 1.5;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255, 168, 0, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 118, 255, 0.03) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+        .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; padding: 2rem; }
+
+        /* HEADER */
+        .top-hero-header {
+            background: linear-gradient(135deg, #000000 0%, #151515 100%);
+            border-radius: 16px; padding: 1.75rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1.5rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+        }
+        .logo-area { display: flex; align-items: center; gap: 1rem; }
+        .logo-rentcars { font-weight: 800; color: #fff; letter-spacing: -1.5px; font-size: 2.2rem; display: flex; align-items: center; line-height: 1; }
+        .logo-subtitle { font-size: 1.1rem; font-weight: 600; color: #cbd5e1; border-left: 2px solid var(--accent-orange); padding-left: 1rem; margin-left: 0.5rem; display: flex; align-items: center; height: 28px; }
+        .header-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .update-badge { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 0.5rem 1rem; font-size: 0.85rem; color: #e2e8f0; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-nav { background: rgba(255,168,0,0.15); border: 1px solid rgba(255,168,0,0.3); color: var(--accent-orange); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; transition: background 0.2s; }
+        .btn-nav:hover { background: rgba(255,168,0,0.25); }
+
+        /* CARDS */
+        .glass-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; box-shadow: var(--card-shadow); transition: box-shadow 0.2s, border-color 0.2s; }
+        .glass-card:hover { border-color: #cbd5e1; box-shadow: var(--card-shadow-hover); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .panel-title { font-size: 1.2rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; }
+
+        /* ALERT BANNER */
+        .alerts-section { display: flex; flex-direction: column; gap: 0.75rem; }
+        .alert-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid; border-left: 4px solid; background: #fff; box-shadow: var(--card-shadow); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .alert-critical { border-color: rgba(239,68,68,0.2) !important; border-left-color: var(--accent-red) !important; background: rgba(239,68,68,0.03) !important; }
+        .alert-warning  { border-color: rgba(255,168,0,0.2) !important;  border-left-color: var(--accent-orange) !important; background: rgba(255,168,0,0.03) !important; }
+        .alert-info     { border-color: rgba(0,118,255,0.2) !important;  border-left-color: var(--accent-blue) !important;   background: rgba(0,118,255,0.03) !important; }
+        .alert-ok       { border-color: rgba(16,140,84,0.2) !important;  border-left-color: var(--accent-green) !important;  background: rgba(16,140,84,0.03) !important; }
+        .alert-icon-wrap { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .alert-critical .alert-icon-wrap { background: rgba(239,68,68,0.12); color: var(--accent-red); }
+        .alert-warning  .alert-icon-wrap { background: rgba(255,168,0,0.12); color: #d97706; }
+        .alert-info     .alert-icon-wrap { background: rgba(0,118,255,0.12); color: var(--accent-blue); }
+        .alert-ok       .alert-icon-wrap { background: rgba(16,140,84,0.12); color: var(--accent-green); }
+        .alert-content { flex: 1; }
+        .alert-title { font-weight: 800; font-size: 0.92rem; margin-bottom: 0.2rem; }
+        .alert-critical .alert-title { color: var(--accent-red); }
+        .alert-warning  .alert-title { color: #d97706; }
+        .alert-info     .alert-title { color: var(--accent-blue); }
+        .alert-ok       .alert-title { color: var(--accent-green); }
+        .alert-msg { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.55; }
+        .alert-nivel { font-size: 0.65rem; font-weight: 800; padding: 2px 10px; border-radius: 20px; align-self: flex-start; flex-shrink: 0; white-space: nowrap; }
+        .alert-critical .alert-nivel { background: rgba(239,68,68,0.1); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.25); }
+        .alert-warning  .alert-nivel { background: rgba(255,168,0,0.1); color: #d97706; border: 1px solid rgba(255,168,0,0.25); }
+        .alert-info     .alert-nivel { background: rgba(0,118,255,0.1); color: var(--accent-blue); border: 1px solid rgba(0,118,255,0.25); }
+        .alert-ok       .alert-nivel { background: rgba(16,140,84,0.1); color: var(--accent-green); border: 1px solid rgba(16,140,84,0.25); }
+
+        /* PROJECTION GRID — 4 metric cards */
+        .projection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 900px) { .projection-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .projection-grid { grid-template-columns: 1fr; } }
+        .proj-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .proj-card-label { font-size: 0.73rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem; }
+        .proj-card-value { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; color: var(--text-primary); }
+        .proj-card-sub  { font-size: 0.79rem; color: var(--text-secondary); }
+        .proj-card.proj-danger  .proj-card-value { color: var(--accent-red); }
+        .proj-card.proj-warning .proj-card-value { color: #d97706; }
+        .proj-card.proj-ok      .proj-card-value { color: var(--accent-green); }
+        /* PROJECTION SUMMARY (replaces the duplicate EOM + next-month cards) */
+        .proj-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 700px) { .proj-summary { grid-template-columns: 1fr; } }
+        .proj-summary-box { border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; background: #fff; }
+        .proj-summary-box h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
+        .proj-summary-row { display: flex; justify-content: space-between; align-items: baseline; padding: 0.3rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+        .proj-summary-row:last-child { border-bottom: none; }
+        .proj-summary-lbl { color: var(--text-secondary); }
+        .proj-summary-val { font-weight: 700; color: var(--text-primary); }
+        .proj-summary-val.val-red   { color: var(--accent-red); }
+        .proj-summary-val.val-green { color: var(--accent-green); }
+        .proj-summary-val.val-orange{ color: #d97706; }
+        /* TOOLTIP */
+        .has-tooltip { position: relative; cursor: help; }
+        .has-tooltip .tooltip-box {
+            display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
+            background: var(--accent-navy); color: #fff; border-radius: 10px;
+            padding: 0.75rem 1rem; width: 260px; font-size: 0.78rem; line-height: 1.6;
+            box-shadow: 0 8px 24px rgba(15,23,42,0.2); z-index: 100;
+            pointer-events: none; white-space: normal;
+        }
+        .has-tooltip .tooltip-box::after {
+            content: ''; position: absolute; top: 100%; left: 20px;
+            border: 6px solid transparent; border-top-color: var(--accent-navy);
+        }
+        .has-tooltip:hover .tooltip-box { display: block; }
+        .tooltip-formula { font-family: monospace; background: rgba(255,255,255,0.08); border-radius: 6px; padding: 0.4rem 0.6rem; margin: 0.4rem 0; font-size: 0.77rem; display: block; }
+        .tooltip-result  { color: var(--accent-orange); font-weight: 700; }
+
+        /* PROGRESS BAR DAYS */
+        .days-progress { margin-top: 0.5rem; }
+        .days-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .days-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+        .days-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* DIAGNOSIS BOX */
+        .diagnosis-box { background: var(--accent-navy); color: #fff; border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.85rem; }
+        .diagnosis-row { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.875rem; line-height: 1.6; }
+        .diagnosis-row.row-ok  { color: rgba(255,255,255,0.82); }
+        .diagnosis-row.row-bad { color: #fca5a5; }
+        .diagnosis-highlight { background: rgba(255,168,0,0.15); border: 1px solid rgba(255,168,0,0.3); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--accent-orange); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+
+        /* TOP USERS — compact table */
+        .tu-table { width: 100%; border-collapse: collapse; }
+        .tu-table thead th { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); padding: 0 0.75rem 0.6rem; text-align: left; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+        .tu-table thead th:nth-child(3),
+        .tu-table thead th:nth-child(4),
+        .tu-table thead th:nth-child(5) { text-align: right; }
+        .tu-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+        .tu-table tbody tr:last-child { border-bottom: none; }
+        .tu-table tbody tr:hover { background: #f8fafc; }
+        .tu-table tbody tr.row-alert { border-left: 3px solid var(--accent-red); }
+        .tu-table tbody tr.row-warn  { border-left: 3px solid var(--accent-orange); }
+        .tu-table td { padding: 0.6rem 0.75rem; vertical-align: middle; font-size: 0.83rem; }
+        /* col: rank */
+        .td-rank { font-size: 1rem; width: 32px; text-align: center; }
+        .rank-1 { color: #f59e0b; } .rank-2 { color: #94a3b8; } .rank-3 { color: #cd7c3f; }
+        /* col: user */
+        .td-user { min-width: 140px; max-width: 200px; }
+        .td-user-name { font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .td-bar-bg { height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; margin-top: 4px; }
+        .td-bar-fill { height: 100%; border-radius: 2px; }
+        /* col: credits */
+        .td-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .td-sub { font-size: 0.7rem; color: var(--text-muted); }
+        /* col: models */
+        .td-models { min-width: 160px; }
+        .tu-model-pill { display: inline-block; background: #f0f4ff; border: 1px solid #dbeafe; color: #2563eb; border-radius: 20px; padding: 1px 8px; font-size: 0.67rem; font-weight: 700; white-space: nowrap; margin: 1px 2px 1px 0; }
+        .tu-model-pill.pill-extra { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.2); color: var(--accent-red); }
+        .progress-mini { width: 100%; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden; margin-top: 6px; }
+        .progress-mini-bar { height: 100%; border-radius: 2px; transition: width 1s ease-in-out; }
+
+        /* CHART */
+        .chart-container { position: relative; width: 100%; height: 320px; }
+
+        /* HISTORICO EMPTY */
+        .historico-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; color: var(--text-muted); gap: 0.75rem; text-align: center; font-size: 0.875rem; }
+
+        /* BADGE */
+        .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .badge-red { background: rgba(239,68,68,0.1); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+        .badge-green { background: rgba(16,140,84,0.08); color: var(--accent-green); border: 1px solid rgba(16,140,84,0.2); }
+        .badge-orange { background: rgba(255,168,0,0.08); color: #d97706; border: 1px solid rgba(255,168,0,0.2); }
+
+        /* STAT CARDS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; }
+        .stat-card { display: flex; flex-direction: column; gap: 0.75rem; position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-orange); border-radius: 0 4px 4px 0; }
+        .stat-card.blue::before  { background: var(--accent-blue); }
+        .stat-card.green::before { background: var(--accent-green); }
+        .stat-card.navy::before  { background: var(--accent-navy); }
+        .stat-title { font-size: 0.82rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .stat-value { font-size: 1.9rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
+        .stat-sub { font-size: 0.82rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; }
+        .progress-container { width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-top: 2px; }
+        .progress-bar { height: 100%; border-radius: 3px; transition: width 1s ease; }
+        @keyframes text-blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .blink-text { animation: text-blink 1.5s infinite ease-in-out; }
+        @keyframes pulse-border {
+            0%   { box-shadow: 0 4px 20px rgba(15,23,42,0.04), 0 0 0 0px rgba(239,68,68,0.3); }
+            50%  { box-shadow: 0 4px 25px rgba(239,68,68,0.15), 0 0 0 6px rgba(239,68,68,0.12); }
+            100% { box-shadow: 0 4px 20px rgba(15,23,42,0.04), 0 0 0 0px rgba(239,68,68,0.3); }
+        }
+        .warning-pulse { animation: pulse-border 2s infinite ease-in-out !important; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <header class="top-hero-header">
+        <div class="logo-area">
+            <div class="logo-rentcars">rent<span style="color: var(--accent-orange);">cars</span><span style="font-weight:300;font-size:1.2rem;margin-left:2px;color:rgba(255,255,255,0.7);">.com</span></div>
+            <div class="logo-subtitle">Copilot AI — Insights & Alertas</div>
+        </div>
+        <div class="header-meta">
+            <div class="update-badge">
+                <i data-lucide="clock" size="14"></i>
+                Gerado em: <span id="lbl-data-geracao">--/--/---- --:--</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stat Cards -->
+    <section class="stats-grid">
+        <div class="glass-card stat-card" id="card-credits-container">
+            <div class="stat-title" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:0.5rem;">
+                    <i data-lucide="pie-chart" size="16" style="color:var(--accent-orange);"></i>
+                    Créditos de IA Inclusos
+                </span>
+                <span id="badge-critico-credits" class="badge badge-red blink-text" style="display:none;font-size:0.7rem;padding:0.15rem 0.45rem;">CRÍTICO</span>
+            </div>
+            <div class="stat-value" id="val-credits-inclusos">0 / 0</div>
+            <div class="stat-sub">
+                <span id="val-pct-credits">0% utilizado</span>
+                <span id="val-credits-detalhe"></span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="bar-credits" style="width:0%;background:linear-gradient(90deg,var(--accent-orange),#fcd34d);"></div>
+            </div>
+        </div>
+
+        <div class="glass-card stat-card blue" id="card-budget-container">
+            <div class="stat-title" style="width:100%;display:flex;align-items:center;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:0.5rem;">
+                    <i data-lucide="dollar-sign" size="16" style="color:var(--accent-blue);"></i>
+                    Uso Adicional Faturado
+                </span>
+                <span id="badge-critico-budget" class="badge badge-red blink-text" style="display:none;font-size:0.7rem;padding:0.15rem 0.45rem;">CRÍTICO</span>
+            </div>
+            <div class="stat-value" id="val-spent-adicional">$0.00</div>
+            <div class="stat-sub">
+                <span>Orçamento Limite: <strong id="val-budget-adicional" style="color:var(--text-primary);">$0.00</strong></span>
+                <span id="val-spent-pct">0%</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="bar-budget" style="width:0%;background:linear-gradient(90deg,var(--accent-blue),var(--accent-green));"></div>
+            </div>
+        </div>
+
+        <div class="glass-card stat-card green">
+            <div class="stat-title">
+                <i data-lucide="users" size="16" style="color:var(--accent-green);"></i>
+                Usuários Ativos
+            </div>
+            <div class="stat-value" id="val-users-count">0</div>
+            <div class="stat-sub">
+                <span>Mapeados neste ciclo de IA</span>
+                <span style="color:var(--accent-green);display:flex;align-items:center;gap:2px;">
+                    <i data-lucide="shield-check" size="12"></i> Ativos
+                </span>
+            </div>
+        </div>
+
+        <div class="glass-card stat-card navy">
+            <div class="stat-title">
+                <i data-lucide="zap" size="16" style="color:var(--accent-navy);"></i>
+                Modelo Mais Consumido
+            </div>
+            <div class="stat-value" id="val-top-model" style="font-size:1.4rem;padding-top:0.3rem;">--</div>
+            <div class="stat-sub">
+                <span>Maior volume de créditos</span>
+                <span id="val-top-model-credits">0 créditos</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alert Banner -->
+    <section class="alerts-section" id="alerts-container"></section>
+
+    <!-- Projeção de Consumo & Burn Rate -->
+    <section class="glass-card">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i data-lucide="trending-up" style="color: var(--accent-blue);"></i>
+                Projeção de Consumo & Ritmo de Uso
+            </h2>
+            <span id="lbl-mes-referencia" class="badge badge-orange"></span>
+        </div>
+        <div class="projection-grid" id="projection-cards"></div>
+        <div id="diagnosis-box"></div>
+    </section>
+
+    <!-- Top 10 Consumidores -->
+    <section class="glass-card">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i data-lucide="flame" style="color: var(--accent-red);"></i>
+                Top 10 Consumidores — Ranking, Modelos & Projeção
+            </h2>
+            <span id="lbl-total-org" style="font-size:0.85rem;color:var(--text-secondary);"></span>
+        </div>
+        <div style="margin-bottom:1rem;">
+            <input id="user-search" type="text" placeholder="Buscar usuário por nome..."
+                style="width:100%;max-width:360px;padding:0.55rem 1rem;border:1px solid var(--border-color);border-radius:10px;font-family:var(--font-family);font-size:0.875rem;color:var(--text-primary);outline:none;transition:border-color 0.2s,box-shadow 0.2s;"
+                oninput="filtrarUsuarios(this.value)"
+                onfocus="this.style.borderColor='var(--accent-blue)';this.style.boxShadow='0 0 0 3px rgba(0,118,255,0.1)'"
+                onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow='none'">
+            <span id="user-search-info" style="margin-left:0.75rem;font-size:0.8rem;color:var(--text-muted);"></span>
+        </div>
+        <div id="top-users-grid"></div>
+    </section>
+
+    <!-- Evolução Histórica Mensal -->
+    <section class="glass-card" id="historico-section">
+        <div class="panel-header">
+            <h2 class="panel-title">
+                <i data-lucide="line-chart" style="color: var(--accent-green);"></i>
+                Evolução Histórica Mensal
+            </h2>
+        </div>
+        <div id="historico-body"></div>
+    </section>
+
+</div>
+
+<script>
+    const copilotData = /* DATA_PLACEHOLDER_START */ {
+        "dataGeracao": "2026-06-22T03:16:20.894Z",
+        "orcamentoGeral": { "spent": "$117.00 spent", "budget": "$200.00 budget" },
+        "visaoGeralOrganizacao": {
+            "creditosInclusosConsumidos": "137,984",
+            "creditosInclusosTotal": "138,000",
+            "usoAdicionalStatus": "Not enabled"
+        },
+        "resumoConsolidadoModelos": [],
+        "detalheUsuarios": []
+    } /* DATA_PLACEHOLDER_END */;
+
+    const historicoData = /* HISTORICO_PLACEHOLDER_START */ [] /* HISTORICO_PLACEHOLDER_END */;
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function parseF(val) {
+        if (!val) return 0;
+        return parseFloat(val.toString().replace(/[^\d.\-]/g, '').replace(/,/g, '')) || 0;
+    }
+    function fmtN(num) {
+        return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function fmtInt(num) {
+        return Math.round(num).toLocaleString('pt-BR');
+    }
+
+    // ── Projeção ─────────────────────────────────────────────────────────────
+    function calcularProjecao(data) {
+        const dataGeracao = new Date(data.dataGeracao);
+        const diaDoMes    = dataGeracao.getDate();
+        const diasNoMes   = new Date(dataGeracao.getFullYear(), dataGeracao.getMonth() + 1, 0).getDate();
+        const diasRestantes = diasNoMes - diaDoMes;
+
+        const creditosConsumidos = parseF(data.visaoGeralOrganizacao?.creditosInclusosConsumidos);
+        const creditosTotal      = parseF(data.visaoGeralOrganizacao?.creditosInclusosTotal) || 138000;
+        const spentDolar         = parseF(data.orcamentoGeral?.spent);
+        const budgetDolar        = parseF(data.orcamentoGeral?.budget) || 200;
+
+        const burnCreditos = diaDoMes > 0 ? creditosConsumidos / diaDoMes : 0;
+        const burnDolar    = diaDoMes > 0 ? spentDolar / diaDoMes : 0;
+
+        const projEomCreditos = creditosConsumidos + burnCreditos * diasRestantes;
+        const projEomDolar    = spentDolar + burnDolar * diasRestantes;
+        const proxMesCreditos = burnCreditos * 30;
+        const proxMesDolar    = burnDolar * 30;
+        const deficitCreditos = Math.max(0, projEomCreditos - creditosTotal);
+        const saldoDolar      = Math.max(0, budgetDolar - spentDolar);
+        const pctCredits      = Math.min((creditosConsumidos / creditosTotal) * 100, 100);
+        const pctDolar        = budgetDolar > 0 ? Math.min((spentDolar / budgetDolar) * 100, 100) : 0;
+
+        return {
+            diaDoMes, diasNoMes, diasRestantes,
+            burnCreditos, burnDolar,
+            projEomCreditos, projEomDolar,
+            proxMesCreditos, proxMesDolar,
+            deficitCreditos, saldoDolar,
+            ultrapassaCreditos: projEomCreditos > creditosTotal,
+            ultrapassaDolar: projEomDolar > budgetDolar,
+            pctCredits, pctDolar,
+            creditosConsumidos, creditosTotal,
+            spentDolar, budgetDolar
+        };
+    }
+
+    // ── Render Stat Cards ────────────────────────────────────────────────────
+    function renderStatCards(data) {
+        const credUsed  = parseF(data.visaoGeralOrganizacao?.creditosInclusosConsumidos);
+        const credTotal = parseF(data.visaoGeralOrganizacao?.creditosInclusosTotal) || 1;
+        const pctCred   = Math.min((credUsed / credTotal) * 100, 100);
+        const spent     = parseF(data.orcamentoGeral?.spent);
+        const budget    = parseF(data.orcamentoGeral?.budget) || 1;
+        const pctBudget = Math.min((spent / budget) * 100, 100);
+        const users     = data.detalheUsuarios || [];
+        const modelos   = data.resumoConsolidadoModelos || [];
+        const topModel  = modelos.length > 0
+            ? [...modelos].sort((a,b) => parseF(b.includedCredits)+parseF(b.additionalCredits) - parseF(a.includedCredits)-parseF(a.additionalCredits))[0]
+            : null;
+
+        document.getElementById('val-credits-inclusos').textContent = `${fmtInt(credUsed)} / ${fmtInt(credTotal)}`;
+        document.getElementById('val-pct-credits').textContent = `${pctCred.toFixed(1)}% utilizado`;
+        document.getElementById('val-credits-detalhe').textContent = `${fmtInt(credTotal - credUsed)} restantes`;
+        document.getElementById('bar-credits').style.width = pctCred + '%';
+        if (pctCred >= 95) {
+            document.getElementById('badge-critico-credits').style.display = 'inline-flex';
+            document.getElementById('card-credits-container').classList.add('warning-pulse');
+        }
+
+        document.getElementById('val-spent-adicional').textContent = `$${spent.toFixed(2)}`;
+        document.getElementById('val-budget-adicional').textContent = `$${budget.toFixed(2)}`;
+        document.getElementById('val-spent-pct').textContent = `${pctBudget.toFixed(1)}%`;
+        document.getElementById('bar-budget').style.width = pctBudget + '%';
+        if (pctBudget >= 95) {
+            document.getElementById('badge-critico-budget').style.display = 'inline-flex';
+            document.getElementById('card-budget-container').classList.add('warning-pulse');
+        }
+
+        document.getElementById('val-users-count').textContent = users.length;
+
+        if (topModel) {
+            document.getElementById('val-top-model').textContent = topModel.modelo;
+            document.getElementById('val-top-model-credits').textContent =
+                `${fmtInt(parseF(topModel.includedCredits) + parseF(topModel.additionalCredits))} créditos`;
+        }
+    }
+
+    // ── Render Alertas ───────────────────────────────────────────────────────
+    function renderAlertas(data, p) {
+        const container = document.getElementById('alerts-container');
+        const alertas = [];
+
+        // Créditos
+        if (p.pctCredits >= 95) {
+            alertas.push({ tipo: 'critical', nivel: 'CRÍTICO', icon: 'alert-triangle', titulo: 'Créditos Quase Esgotados',
+                msg: `<strong>${p.pctCredits.toFixed(1)}%</strong> dos créditos inclusos utilizados. Ao ritmo atual (${fmtInt(p.burnCreditos)} cr/dia), restam apenas ${p.diasRestantes} dias — a organização pode ter os modelos padrão bloqueados antes do fim do ciclo.` });
+        } else if (p.pctCredits >= 80) {
+            alertas.push({ tipo: 'warning', nivel: 'ATENÇÃO', icon: 'alert-circle', titulo: 'Créditos em Alerta',
+                msg: `${p.pctCredits.toFixed(1)}% dos créditos utilizados. Restam <strong>${fmtInt(p.creditosTotal - p.creditosConsumidos)} créditos</strong> para ${p.diasRestantes} dias.` });
+        } else {
+            alertas.push({ tipo: 'ok', nivel: 'OK', icon: 'check-circle-2', titulo: 'Créditos Inclusos: Situação Normal',
+                msg: `${p.pctCredits.toFixed(1)}% utilizados. Ritmo: ${fmtInt(p.burnCreditos)} créditos/dia. Projeção ao fim do mês: ${fmtInt(p.projEomCreditos)} créditos.` });
+        }
+
+        // Projeção de déficit de créditos
+        if (p.ultrapassaCreditos && p.pctCredits < 95) {
+            alertas.push({ tipo: 'warning', nivel: 'PROJEÇÃO', icon: 'trending-up', titulo: 'Projeção: Créditos Insuficientes ao Fim do Mês',
+                msg: `Ao ritmo atual serão consumidos ~<strong>${fmtInt(p.projEomCreditos)} créditos</strong> até o dia ${p.diasNoMes}/${new Date(data.dataGeracao).getMonth()+1}. O limite é ${fmtInt(p.creditosTotal)} — déficit estimado de <strong>${fmtInt(p.deficitCreditos)} créditos</strong>.` });
+        }
+
+        // Orçamento $
+        if (p.pctDolar >= 80) {
+            alertas.push({ tipo: p.pctDolar >= 95 ? 'critical' : 'warning',
+                nivel: p.pctDolar >= 95 ? 'CRÍTICO' : 'ATENÇÃO', icon: 'dollar-sign',
+                titulo: 'Orçamento em Dólar em Alerta',
+                msg: `$${p.spentDolar.toFixed(2)} de $${p.budgetDolar.toFixed(2)} utilizados (${p.pctDolar.toFixed(1)}%). Projeção ao fim do mês: <strong>$${p.projEomDolar.toFixed(2)}</strong> — ${p.ultrapassaDolar ? 'acima do orçamento!' : 'dentro do orçamento.'}` });
+        } else {
+            alertas.push({ tipo: 'ok', nivel: 'OK', icon: 'check-circle-2', titulo: 'Orçamento em Dólar: Situação Normal',
+                msg: `$${p.spentDolar.toFixed(2)} de $${p.budgetDolar.toFixed(2)} utilizados (${p.pctDolar.toFixed(1)}%). Saldo disponível: <strong>$${p.saldoDolar.toFixed(2)}</strong>.` });
+        }
+
+        // Uso adicional desativado + créditos críticos
+        const status = data.visaoGeralOrganizacao?.usoAdicionalStatus || '';
+        if (p.pctCredits >= 90 && status !== 'Enabled') {
+            alertas.push({ tipo: 'warning', nivel: 'CONFIG', icon: 'shield-alert', titulo: 'Uso Adicional Desativado — Risco de Bloqueio',
+                msg: `O uso adicional está <strong>desativado</strong>. Com os créditos em ${p.pctCredits.toFixed(1)}%, ao esgotar a franquia os modelos padrão pararão de responder. Recomenda-se ativar o uso adicional no painel do GitHub.` });
+        }
+
+        // Top user > 25%
+        const users = data.detalheUsuarios || [];
+        if (users.length > 0) {
+            const totalOrg = users.reduce((s, u) => s + parseF(u.totalIncludedCredits) + parseF(u.totalAdditionalCredits), 0);
+            const top = [...users].sort((a, b) => (parseF(b.totalIncludedCredits) + parseF(b.totalAdditionalCredits)) - (parseF(a.totalIncludedCredits) + parseF(a.totalAdditionalCredits)))[0];
+            const topTotal = parseF(top.totalIncludedCredits) + parseF(top.totalAdditionalCredits);
+            const topPct = totalOrg > 0 ? (topTotal / totalOrg) * 100 : 0;
+            if (topPct >= 25) {
+                alertas.push({ tipo: 'info', nivel: 'INFO', icon: 'user', titulo: `Alto Consumo Individual: ${top.usuario}`,
+                    msg: `O desenvolvedor <strong>${top.usuario}</strong> representa <strong>${topPct.toFixed(1)}%</strong> do consumo total (${fmtInt(topTotal)} créditos / ${top.totalAdditionalUsage} em cobranças extras).` });
+            }
+        }
+
+        container.innerHTML = alertas.map(a => `
+            <div class="alert-item alert-${a.tipo}">
+                <div class="alert-icon-wrap"><i data-lucide="${a.icon}" size="18"></i></div>
+                <div class="alert-content">
+                    <div class="alert-title">${a.titulo}</div>
+                    <div class="alert-msg">${a.msg}</div>
+                </div>
+                <span class="alert-nivel">${a.nivel}</span>
+            </div>`).join('');
+        lucide.createIcons();
+    }
+
+    // ── Render Projeção ──────────────────────────────────────────────────────
+    function renderProjecao(data, p) {
+        const dataGeracao = new Date(data.dataGeracao);
+        const mesNome = dataGeracao.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        document.getElementById('lbl-mes-referencia').textContent = mesNome.charAt(0).toUpperCase() + mesNome.slice(1);
+
+        const pctDaysElapsed = (p.diaDoMes / p.diasNoMes) * 100;
+        const dayBarColor = p.pctCredits > pctDaysElapsed + 15 ? '#ef4444' : p.pctCredits > pctDaysElapsed + 5 ? '#ffa800' : '#0076FF';
+
+        // 4 metric cards: burn rates + days + saldo $
+        document.getElementById('projection-cards').innerHTML = `
+            <div class="proj-card">
+                <div class="proj-card-label has-tooltip">
+                    <i data-lucide="zap" size="12"></i> Ritmo de créditos
+                    <i data-lucide="info" size="11" style="margin-left:4px;opacity:0.5;"></i>
+                    <div class="tooltip-box">
+                        <strong>Como é calculado?</strong>
+                        <span class="tooltip-formula">${fmtInt(p.creditosConsumidos)} cr ÷ ${p.diaDoMes} dias</span>
+                        = <span class="tooltip-result">${fmtInt(p.burnCreditos)} créditos/dia</span><br>
+                        <span style="opacity:0.75;font-size:0.73rem;">Média de consumo diário com base nos ${p.diaDoMes} dias já decorridos neste ciclo.</span>
+                    </div>
+                </div>
+                <div class="proj-card-value">${fmtInt(p.burnCreditos)}</div>
+                <div class="proj-card-sub">créditos / dia</div>
+                <div class="proj-card-sub" style="margin-top:4px;">Base: ${p.diaDoMes} dias de dados</div>
+            </div>
+            <div class="proj-card">
+                <div class="proj-card-label has-tooltip">
+                    <i data-lucide="dollar-sign" size="12"></i> Ritmo de gastos
+                    <i data-lucide="info" size="11" style="margin-left:4px;opacity:0.5;"></i>
+                    <div class="tooltip-box">
+                        <strong>Como é calculado?</strong>
+                        <span class="tooltip-formula">$${p.spentDolar.toFixed(2)} ÷ ${p.diaDoMes} dias</span>
+                        = <span class="tooltip-result">$${p.burnDolar.toFixed(2)}/dia</span><br>
+                        <span style="opacity:0.75;font-size:0.73rem;">Média de gasto diário em dólar com base nos ${p.diaDoMes} dias já decorridos neste ciclo.</span>
+                    </div>
+                </div>
+                <div class="proj-card-value">$${p.burnDolar.toFixed(2)}</div>
+                <div class="proj-card-sub">por dia (USD)</div>
+                <div class="proj-card-sub" style="margin-top:4px;">Saldo restante: <strong>$${p.saldoDolar.toFixed(2)}</strong></div>
+            </div>
+            <div class="proj-card">
+                <div class="proj-card-label"><i data-lucide="calendar" size="12"></i> Ciclo atual</div>
+                <div class="proj-card-value">${p.diasRestantes}d</div>
+                <div class="proj-card-sub">dias restantes no mês</div>
+                <div class="days-progress">
+                    <div class="days-bar-bg"><div class="days-bar-fill" style="width:${pctDaysElapsed.toFixed(1)}%;background:${dayBarColor};"></div></div>
+                    <div class="days-label"><span>Dia 1</span><span>Dia ${p.diaDoMes} ← hoje</span><span>Dia ${p.diasNoMes}</span></div>
+                </div>
+            </div>
+            <div class="proj-card ${p.pctCredits >= 95 ? 'proj-danger' : p.pctCredits >= 80 ? 'proj-warning' : 'proj-ok'}">
+                <div class="proj-card-label"><i data-lucide="cpu" size="12"></i> Créditos consumidos</div>
+                <div class="proj-card-value">${p.pctCredits.toFixed(1)}%</div>
+                <div class="proj-card-sub">${fmtInt(p.creditosConsumidos)} de ${fmtInt(p.creditosTotal)}</div>
+                <div class="proj-card-sub" style="margin-top:4px;">Restam <strong>${fmtInt(p.creditosTotal - p.creditosConsumidos)}</strong> créditos</div>
+            </div>`;
+
+        // Projeção + Recomendação (dois boxes lado a lado)
+        const defCred = p.projEomCreditos - p.creditosTotal;
+        const defDol  = p.projEomDolar - p.budgetDolar;
+        const proxDeficit = Math.max(0, p.proxMesCreditos - p.creditosTotal);
+        const proxDefDol  = Math.max(0, p.proxMesDolar - p.budgetDolar);
+
+        document.getElementById('projection-cards').insertAdjacentHTML('afterend', `
+            <div class="proj-summary" id="proj-summary-boxes">
+                <div class="proj-summary-box">
+                    <h4><i data-lucide="calendar-check" size="13"></i> Projeção — Fim de ${dataGeracao.toLocaleDateString('pt-BR', { month: 'long' })}</h4>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">Créditos projetados</span>
+                        <span class="proj-summary-val ${p.ultrapassaCreditos ? 'val-red' : 'val-green'}">${fmtInt(p.projEomCreditos)}</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">Limite do ciclo</span>
+                        <span class="proj-summary-val">${fmtInt(p.creditosTotal)}</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">${defCred > 0 ? 'Déficit estimado' : 'Margem disponível'}</span>
+                        <span class="proj-summary-val ${defCred > 0 ? 'val-red' : 'val-green'}">${defCred > 0 ? '− ' + fmtInt(defCred) : '+ ' + fmtInt(-defCred)} cr</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">Gasto $ projetado</span>
+                        <span class="proj-summary-val ${p.ultrapassaDolar ? 'val-red' : 'val-green'}">$${p.projEomDolar.toFixed(2)}</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">${defDol > 0 ? 'Estouro de budget' : 'Margem de budget'}</span>
+                        <span class="proj-summary-val ${defDol > 0 ? 'val-red' : 'val-green'}">${defDol > 0 ? '− $' + defDol.toFixed(2) : '+ $' + (-defDol).toFixed(2)}</span>
+                    </div>
+                </div>
+                <div class="proj-summary-box">
+                    <h4><i data-lucide="lightbulb" size="13"></i> Recomendação para o Próximo Mês</h4>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">Créditos necessários (30d)</span>
+                        <span class="proj-summary-val ${proxDeficit > 0 ? 'val-orange' : ''}">${fmtInt(p.proxMesCreditos)}</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">Limite atual</span>
+                        <span class="proj-summary-val">${fmtInt(p.creditosTotal)}</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">${proxDeficit > 0 ? 'Solicitar créditos extras' : 'Limite suficiente'}</span>
+                        <span class="proj-summary-val ${proxDeficit > 0 ? 'val-red' : 'val-green'}">${proxDeficit > 0 ? fmtInt(Math.ceil(proxDeficit / 1000) * 1000) + ' cr' : '✓ OK'}</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">Budget $ sugerido (30d)</span>
+                        <span class="proj-summary-val ${proxDefDol > 0 ? 'val-orange' : ''}">$${(p.proxMesDolar * 1.1).toFixed(2)} <span style="font-weight:400;font-size:0.75rem;color:var(--text-muted)">(+10% margem)</span></span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">Budget atual</span>
+                        <span class="proj-summary-val">$${p.budgetDolar.toFixed(2)}</span>
+                    </div>
+                    <div class="proj-summary-row">
+                        <span class="proj-summary-lbl">${proxDefDol > 0 ? 'Aumentar budget em' : 'Budget suficiente'}</span>
+                        <span class="proj-summary-val ${proxDefDol > 0 ? 'val-red' : 'val-green'}">${proxDefDol > 0 ? '$' + (proxDefDol * 1.1).toFixed(2) : '✓ OK'}</span>
+                    </div>
+                </div>
+            </div>`);
+
+        // Diagnosis box
+        document.getElementById('diagnosis-box').innerHTML = `
+            <div class="diagnosis-box">
+                <div style="font-weight:800;font-size:1rem;color:var(--accent-orange);display:flex;align-items:center;gap:0.5rem;">
+                    <i data-lucide="activity" size="18"></i>
+                    Diagnóstico ao ritmo atual (${fmtInt(p.burnCreditos)} cr/dia · $${p.burnDolar.toFixed(2)}/dia)
+                </div>
+                <div class="diagnosis-row ${p.ultrapassaCreditos ? 'row-bad' : 'row-ok'}">
+                    <span>${p.ultrapassaCreditos ? '✗' : '✓'}</span>
+                    <span><strong>Este mês:</strong> projetado ${fmtInt(p.projEomCreditos)} créditos e $${p.projEomDolar.toFixed(2)} —
+                    ${p.ultrapassaCreditos ? `<strong>déficit de ${fmtInt(p.deficitCreditos)} créditos.</strong>` : 'dentro dos limites.'}
+                    ${p.ultrapassaDolar ? ` Budget excedido em $${(p.projEomDolar - p.budgetDolar).toFixed(2)}.` : ''}</span>
+                </div>
+                <div class="diagnosis-row ${proxDeficit > 0 ? 'row-bad' : 'row-ok'}">
+                    <span>${proxDeficit > 0 ? '✗' : '✓'}</span>
+                    <span><strong>Próximo mês:</strong> precisará de ~${fmtInt(p.proxMesCreditos)} créditos e ~$${p.proxMesDolar.toFixed(2)}.
+                    ${proxDeficit > 0 ? ` Limite de ${fmtInt(p.creditosTotal)} é insuficiente.` : ` Limite de ${fmtInt(p.creditosTotal)} é suficiente.`}
+                    ${proxDefDol > 0 ? ` Aumente o budget para <strong>$${(p.proxMesDolar * 1.1).toFixed(2)}</strong>.` : ''}</span>
+                </div>
+            </div>`;
+        lucide.createIcons();
+    }
+
+    // ── Render Top Users ─────────────────────────────────────────────────────
+    let _allUsersSorted = [];
+    let _totalOrg = 0;
+    let _projParams = null;
+
+    function buildUserRow(u, rank, totalOrg, p, query) {
+        const total    = parseF(u.totalIncludedCredits) + parseF(u.totalAdditionalCredits);
+        const pct      = totalOrg > 0 ? (total / totalOrg) * 100 : 0;
+        const addCost  = parseF(u.totalAdditionalUsage);
+        const pctColor = pct >= 25 ? 'var(--accent-red)' : pct >= 15 ? '#d97706' : 'var(--accent-navy)';
+        const barColor = pct >= 25 ? '#ef4444' : pct >= 15 ? '#ffa800' : '#0076FF';
+        const rowCls   = pct >= 25 ? 'row-alert' : pct >= 15 ? 'row-warn' : '';
+        const burnUser    = p.diaDoMes > 0 ? total / p.diaDoMes : 0;
+        const projEomUser = total + burnUser * p.diasRestantes;
+
+        const modelos = [...(u.modelos || [])].sort((a, b) =>
+            (parseF(b.includedCredits) + parseF(b.additionalCredits)) -
+            (parseF(a.includedCredits) + parseF(a.additionalCredits))
+        ).slice(0, 3);
+        const modelPills = modelos.map(m => {
+            const hasExtra = parseF(m.additionalCredits) > 0;
+            return `<span class="tu-model-pill ${hasExtra ? 'pill-extra' : ''}" title="${fmtInt(parseF(m.includedCredits)+parseF(m.additionalCredits))} cr${hasExtra ? ' · custo extra' : ''}">${m.modelo}</span>`;
+        }).join('');
+
+        const rankLabel = rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank;
+        const rankCls   = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+
+        // highlight search term
+        let nome = u.usuario;
+        if (query) {
+            const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+            nome = nome.replace(re, '<mark style="background:rgba(255,168,0,0.3);border-radius:2px;padding:0 1px;">$1</mark>');
+        }
+
+        return `
+        <tr class="${rowCls}">
+            <td class="td-rank ${rankCls}">${rankLabel}</td>
+            <td class="td-user">
+                <div class="td-user-name" title="${u.usuario}">${nome}</div>
+                <div class="td-bar-bg"><div class="td-bar-fill" style="width:${Math.min(pct,100)}%;background:${barColor};"></div></div>
+            </td>
+            <td class="td-num">
+                <div style="font-weight:700;">${fmtInt(total)}</div>
+                ${addCost > 0 ? `<div class="td-sub" style="color:var(--accent-red);font-weight:700;">$${addCost.toFixed(2)} extra</div>` : `<div class="td-sub">sem extra</div>`}
+            </td>
+            <td class="td-num" style="font-weight:800;color:${pctColor};">${pct.toFixed(1)}%</td>
+            <td class="td-num">
+                <div style="font-weight:700;">${fmtInt(burnUser)}</div>
+                <div class="td-sub">cr/dia</div>
+            </td>
+            <td class="td-num">
+                <div style="font-weight:700;">${fmtInt(projEomUser)}</div>
+                <div class="td-sub">proj. EOM</div>
+            </td>
+            <td class="td-models">${modelPills}</td>
+        </tr>`;
+    }
+
+    function renderTabela(lista, query) {
+        const info = document.getElementById('user-search-info');
+        if (lista.length === 0) {
+            document.getElementById('top-users-grid').innerHTML =
+                `<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.875rem;">Nenhum usuário encontrado para "<strong>${query}</strong>"</div>`;
+            info.textContent = '';
+            return;
+        }
+        const rows = lista.map((u, i) => buildUserRow(u, _allUsersSorted.indexOf(u) + 1, _totalOrg, _projParams, query)).join('');
+        document.getElementById('top-users-grid').innerHTML = `
+            <table class="tu-table">
+                <thead><tr><th>#</th><th>Usuário</th><th>Créditos</th><th>% Org</th><th>Ritmo</th><th>Proj. fim do mês</th><th>Top modelos</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+        info.textContent = query ? `${lista.length} resultado${lista.length !== 1 ? 's' : ''}` : `Exibindo top 10 de ${_allUsersSorted.length}`;
+    }
+
+    function filtrarUsuarios(query) {
+        const q = query.trim().toLowerCase();
+        if (!q) {
+            renderTabela(_allUsersSorted.slice(0, 10), '');
+            return;
+        }
+        const resultado = _allUsersSorted.filter(u => u.usuario.toLowerCase().includes(q));
+        renderTabela(resultado, query.trim());
+    }
+
+    function renderTopUsers(data, p) {
+        _projParams = p;
+        _allUsersSorted = [...(data.detalheUsuarios || [])].sort((a, b) =>
+            (parseF(b.totalIncludedCredits) + parseF(b.totalAdditionalCredits)) -
+            (parseF(a.totalIncludedCredits) + parseF(a.totalAdditionalCredits))
+        );
+        _totalOrg = _allUsersSorted.reduce((s, u) => s + parseF(u.totalIncludedCredits) + parseF(u.totalAdditionalCredits), 0);
+        document.getElementById('lbl-total-org').textContent = `Total org: ${fmtInt(_totalOrg)} cr · ${p.diaDoMes} dias decorridos`;
+        renderTabela(_allUsersSorted.slice(0, 10), '');
+    }
+
+    // ── Render Histórico ─────────────────────────────────────────────────────
+    let historicoChartInstance = null;
+    function renderHistorico(historico) {
+        const body = document.getElementById('historico-body');
+        if (!historico || historico.length < 2) {
+            body.innerHTML = `
+                <div class="historico-empty">
+                    <i data-lucide="bar-chart-2" size="40" style="opacity:0.3;"></i>
+                    <strong>Histórico ainda não disponível</strong>
+                    <span>Execute o scraper mensalmente. Após 2 meses de dados o gráfico de tendência aparecerá aqui automaticamente.</span>
+                </div>`;
+            lucide.createIcons();
+            return;
+        }
+
+        const sorted  = [...historico].sort((a, b) => new Date(a.dataGeracao) - new Date(b.dataGeracao));
+        const labels   = sorted.map(h => new Date(h.dataGeracao).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }));
+        const credData = sorted.map(h => parseF(h.visaoGeralOrganizacao?.creditosInclusosConsumidos));
+        const dolData  = sorted.map(h => parseF(h.orcamentoGeral?.spent));
+
+        body.innerHTML = `<div class="chart-container"><canvas id="chart-historico"></canvas></div>`;
+
+        if (historicoChartInstance) historicoChartInstance.destroy();
+        historicoChartInstance = new Chart(
+            document.getElementById('chart-historico').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Créditos Consumidos', data: credData, borderColor: '#ffa800', backgroundColor: 'rgba(255,168,0,0.07)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#ffa800', fill: true, tension: 0.3, yAxisID: 'y' },
+                    { label: 'Gasto USD ($)', data: dolData, borderColor: '#0076FF', backgroundColor: 'rgba(0,118,255,0.05)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#0076FF', fill: true, tension: 0.3, yAxisID: 'y1' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { labels: { color: '#475569', font: { family: 'Plus Jakarta Sans', weight: '700' } } } },
+                scales: {
+                    y:  { type: 'linear', position: 'left',  grid: { color: '#f1f5f9' }, ticks: { color: '#ffa800', font: { family: 'Plus Jakarta Sans' } }, title: { display: true, text: 'Créditos', color: '#ffa800' } },
+                    y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#0076FF', font: { family: 'Plus Jakarta Sans' }, callback: v => '$' + v.toFixed(0) }, title: { display: true, text: 'USD', color: '#0076FF' } },
+                    x:  { grid: { display: false }, ticks: { color: '#475569', font: { family: 'Plus Jakarta Sans', weight: '600' } } }
+                }
+            }
+        });
+    }
+
+    // ── Boot ─────────────────────────────────────────────────────────────────
+    function init(data) {
+        if (data.dataGeracao) {
+            document.getElementById('lbl-data-geracao').innerText = new Date(data.dataGeracao).toLocaleString('pt-BR');
+        }
+        const p = calcularProjecao(data);
+        renderStatCards(data);
+        renderAlertas(data, p);
+        renderProjecao(data, p);
+        renderTopUsers(data, p);
+        renderHistorico(historicoData);
+        lucide.createIcons();
+    }
+
+    init(copilotData);
+</script>
+</body>
+</html>
