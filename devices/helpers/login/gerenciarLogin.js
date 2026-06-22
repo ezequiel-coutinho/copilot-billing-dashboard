@@ -21,6 +21,7 @@ async function gerenciarLogin(page, context) {
     }
 
     const codigoMfa = authenticator.generate(segredoLimpo);
+    console.log(`🕒 Código 2FA Gerado pela Automação: ${codigoMfa} (Restam ${30 - (Math.floor(Date.now() / 1000) % 30)}s para expirar)`);
     
     await page.fill("#app_totp", codigoMfa);
     await page.keyboard.press("Enter");
