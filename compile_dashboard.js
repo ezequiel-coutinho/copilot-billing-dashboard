@@ -4,7 +4,7 @@ import path from 'path';
 try {
     const jsonPath = "relatorio_final_copilot.json";
     const templatePath = "devices/helpers/dashboard_template.html";
-    const outputPath = "dashboard.html";
+    const outputPath = "index.html";
 
     if (!fs.existsSync(jsonPath)) {
         console.error(`Erro: Arquivo ${jsonPath} não foi encontrado!`);
@@ -23,7 +23,7 @@ try {
     html = html.replace(/\/\* DATA_PLACEHOLDER_START \*\/[\s\S]*?\/\* DATA_PLACEHOLDER_END \*\//g, `/* DATA_PLACEHOLDER_START */ ${JSON.stringify(relatorioFinal, null, 4)} /* DATA_PLACEHOLDER_END */`);
 
     fs.writeFileSync(outputPath, html, "utf-8");
-    console.log("Sucesso! O arquivo 'dashboard.html' foi compilado e atualizado perfeitamente com os dados mais recentes.");
+    console.log("Sucesso! O arquivo 'index.html' foi compilado e atualizado perfeitamente com os dados mais recentes.");
 } catch (error) {
     console.error("Erro durante a compilação do dashboard:", error);
     process.exit(1);

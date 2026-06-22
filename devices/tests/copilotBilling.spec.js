@@ -40,8 +40,8 @@ test('Extrair faturamento do Copilot - Rentcars', async ({ page, context }) => {
             let html = fs.readFileSync(templatePath, "utf-8");
             // Substitui o bloco de fallback pela carga real de dados
             html = html.replace(/\/\* DATA_PLACEHOLDER_START \*\/[\s\S]*?\/\* DATA_PLACEHOLDER_END \*\//g, `/* DATA_PLACEHOLDER_START */ ${JSON.stringify(relatorioFinal, null, 4)} /* DATA_PLACEHOLDER_END */`);
-            fs.writeFileSync("dashboard.html", html, "utf-8");
-            console.log("Sucesso! Dashboard HTML gerado/atualizado.");
+            fs.writeFileSync("index.html", html, "utf-8");
+            console.log("Sucesso! Dashboard HTML gerado/atualizado como index.html.");
         }
     } catch (erro) {
         console.error("Erro na execução:", erro);

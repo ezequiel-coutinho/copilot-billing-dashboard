@@ -23,7 +23,7 @@ echo [2/3] Dashboard atualizado com sucesso localmente!
 echo.
 
 echo [3/3] Enviando atualizacao para o GitHub...
-git add dashboard.html
+git add index.html
 git commit -m "Auto-update dashboard [%DATE% %TIME%]"
 git push
 
