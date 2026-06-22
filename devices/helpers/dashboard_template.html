@@ -119,32 +119,7 @@
             gap: 0.5rem;
         }
 
-        /* Rentcars Green CTA Upload Button */
-        .btn-upload {
-            background: var(--accent-green);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 0.65rem 1.35rem;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 15px rgba(16, 140, 84, 0.3);
-            transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
-        }
 
-        .btn-upload:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-            box-shadow: 0 6px 20px rgba(16, 140, 84, 0.45);
-        }
-
-        .btn-upload input[type="file"] {
-            display: none;
-        }
 
         /* Clean Dashboard Cards */
         .glass-card {
@@ -771,11 +746,6 @@
                     <i data-lucide="clock" size="14"></i>
                     Gerado em: <span id="lbl-data-geracao">--/--/---- --:--</span>
                 </div>
-                <label class="btn-upload">
-                    <i data-lucide="upload" size="16"></i>
-                    Carregar JSON
-                    <input type="file" id="file-input" accept=".json">
-                </label>
             </div>
         </header>
 
@@ -1791,32 +1761,11 @@
             lucide.createIcons();
         };
 
-        // Handle JSON File Input manually
-        document.getElementById('file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const parsedData = JSON.parse(evt.target.result);
-                    if (parsedData.orcamentoGeral && parsedData.detalheUsuarios) {
-                        renderDashboard(parsedData);
-                    } else {
-                        alert("O formato do arquivo JSON selecionado não é válido para o dashboard do Copilot.");
-                    }
-                } catch (err) {
-                    alert("Erro ao decodificar o arquivo JSON: " + err.message);
-                }
-            };
-            reader.readAsText(file);
-        });
-
         // Date Period Selector handler
         document.getElementById('filter-period').addEventListener('change', function(e) {
             const val = e.target.value;
             if (val === 'all') {
-                alert("Simulação histórica: Você está visualizando o snapshot do ciclo atual (" + new Date(currentData.dataGeracao).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}) + ").\n\nCada arquivo JSON exportado representa o faturamento acumulado de um mês específico. Para comparar períodos passados, basta carregar o arquivo JSON do mês correspondente pelo botão 'Carregar JSON'!");
+                alert("Simulação histórica: Você está visualizando o snapshot do ciclo atual (" + new Date(currentData.dataGeracao).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'}) + ").\n\nCada arquivo JSON exportado representa o faturamento acumulado de um mês específico.");
                 e.target.value = 'current'; // reset back to current
             }
         });
