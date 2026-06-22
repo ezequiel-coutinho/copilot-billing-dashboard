@@ -1675,6 +1675,29 @@
                     plugins: {
                         legend: {
                             labels: { color: '#475569', font: { family: 'Plus Jakarta Sans', weight: '700' } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += formatNumber(context.parsed.x);
+                                    }
+                                    if (context.datasetIndex === 0) {
+                                        let totalInclusosLimite = 138000;
+                                        if (currentData.visaoGeralOrganizacao && currentData.visaoGeralOrganizacao.creditosInclusosTotal) {
+                                            totalInclusosLimite = parseToFloat(currentData.visaoGeralOrganizacao.creditosInclusosTotal);
+                                        }
+                                        label += ` (de ${Math.round(totalInclusosLimite).toLocaleString('pt-BR')} globais)`;
+                                    } else if (context.datasetIndex === 1) {
+                                        label += ' (excedente faturado)';
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
