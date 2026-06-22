@@ -428,7 +428,7 @@
         .user-header {
             padding: 1rem;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1.2fr 1fr auto;
+            grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr auto;
             align-items: center;
             cursor: pointer;
             font-weight: 600;
@@ -856,10 +856,9 @@
                         <thead>
                             <tr>
                                 <th>Modelo</th>
-                                <th>Créditos Inclusos</th>
-                                <th>Créditos Adicionais</th>
-                                <th>Custo Bruto Est.</th>
-                                <th>Cobrança Excedente</th>
+                                <th>Consumo (Créditos)</th>
+                                <th>Custo de Tabela (USD)</th>
+                                <th>Faturamento Extra Real (USD)</th>
                             </tr>
                         </thead>
                         <tbody id="tbl-models-body">
@@ -909,12 +908,11 @@
             </div>
             <div class="panel-collapse-content">
                 <!-- Table Headers for Accordion Row Alignments -->
-                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1.2fr 1fr auto; padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); gap: 1rem;" class="user-header-hide-mobile">
+                <div style="display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr auto; padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); gap: 1rem;" class="user-header-hide-mobile">
                     <div>Desenvolvedor</div>
-                    <div>Créditos Inclusos</div>
-                    <div>Créditos Excedentes</div>
-                    <div>Custo Bruto Est.</div>
-                    <div>Custo Adicional Billed</div>
+                    <div>Consumo (Créditos)</div>
+                    <div>Custo de Tabela (USD)</div>
+                    <div>Faturamento Extra Real (USD)</div>
                     <div></div>
                 </div>
 
@@ -1326,15 +1324,24 @@
 
             paginatedModels.forEach(m => {
                 const tr = document.createElement('tr');
+                const incCredits = parseToFloat(m.includedCredits);
                 const addCredits = parseToFloat(m.additionalCredits);
+                const totalCredits = incCredits + addCredits;
                 const addBilled = parseToFloat(m.additionalUsage);
 
                 tr.innerHTML = `
                     <td style="font-weight: 700; color: var(--accent-navy);">${m.modelo}</td>
-                    <td><span class="badge badge-orange">${formatNumber(parseToFloat(m.includedCredits))}</span></td>
-                    <td><span class="badge ${addCredits > 0 ? 'badge-yellow' : 'badge-blue'}">${formatNumber(addCredits)}</span></td>
+                    <td>
+                        <span class="badge badge-orange">${formatNumber(totalCredits)}</span>
+                        ${addCredits > 0 ? `<span style="font-size:0.75rem; color: var(--text-secondary); margin-left: 4px;">(${formatNumber(addCredits)} extras)</span>` : ''}
+                    </td>
                     <td>${m.grossAmount || '$0.00'}</td>
-                    <td><strong style="color: ${addBilled > 0 ? 'var(--accent-navy)' : 'var(--text-muted)'};">${m.additionalUsage || '$0.00'}</strong></td>
+                    <td>
+                        <strong style="color: ${addBilled > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+                            ${m.additionalUsage || '$0.00'}
+                        </strong>
+                        ${addBilled > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1410,7 +1417,9 @@
 
                 const firstChar = u.usuario.charAt(0);
                 const addCost = parseToFloat(u.totalAdditionalUsage);
-                const grossCost = parseToFloat(u.totalGrossAmount);
+                const incUserCredits = parseToFloat(u.totalIncludedCredits);
+                const addUserCredits = parseToFloat(u.totalAdditionalCredits);
+                const totalUserCredits = incUserCredits + addUserCredits;
 
                 userItem.innerHTML = `
                     <div class="user-header" onclick="toggleAccordion(this)">
@@ -1418,10 +1427,17 @@
                             <div class="avatar">${firstChar}</div>
                             <span>${u.usuario}</span>
                         </div>
-                        <div class="user-header-hide-mobile"><span class="badge badge-orange">${formatNumber(parseToFloat(u.totalIncludedCredits))}</span></div>
-                        <div class="user-header-hide-mobile"><span class="badge ${parseToFloat(u.totalAdditionalCredits) > 0 ? 'badge-yellow' : 'badge-blue'}">${formatNumber(parseToFloat(u.totalAdditionalCredits))}</span></div>
+                        <div class="user-header-hide-mobile">
+                            <span class="badge badge-orange">${formatNumber(totalUserCredits)}</span>
+                            ${addUserCredits > 0 ? `<span style="font-size:0.75rem; color: var(--text-secondary); margin-left: 4px;">(${formatNumber(addUserCredits)} extras)</span>` : ''}
+                        </div>
                         <div class="user-header-hide-mobile">${u.totalGrossAmount || '$0.00'}</div>
-                        <div><strong style="color: ${addCost > 0 ? 'var(--accent-blue)' : 'var(--text-muted)'};">${u.totalAdditionalUsage || '$0.00'}</strong></div>
+                        <div>
+                            <strong style="color: ${addCost > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+                                ${u.totalAdditionalUsage || '$0.00'}
+                            </strong>
+                            ${addCost > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                        </div>
                         <div><i data-lucide="chevron-down" size="18" style="color: var(--text-muted); transition: transform 0.2s;"></i></div>
                     </div>
                     <div class="user-content">
@@ -1432,22 +1448,34 @@
                                     <thead>
                                         <tr style="background: #f8fafc;">
                                             <th>Modelo Utilizado</th>
-                                            <th>Créditos Inclusos</th>
-                                            <th>Créditos Adicionais</th>
-                                            <th>Custo Bruto Est.</th>
-                                            <th>Cobrança Excedente</th>
+                                            <th>Consumo (Créditos)</th>
+                                            <th>Custo de Tabela (USD)</th>
+                                            <th>Faturamento Extra Real (USD)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${u.modelos.map(m => `
+                                        ${u.modelos.map(m => {
+                                            const incM = parseToFloat(m.includedCredits);
+                                            const addM = parseToFloat(m.additionalCredits);
+                                            const totalM = incM + addM;
+                                            const addUsageM = parseToFloat(m.additionalUsage);
+                                            return `
                                             <tr>
                                                 <td style="font-weight: 600; color: var(--accent-navy);">${m.modelo}</td>
-                                                <td><span class="badge badge-orange">${formatNumber(parseToFloat(m.includedCredits))}</span></td>
-                                                <td><span class="badge ${parseToFloat(m.additionalCredits) > 0 ? 'badge-yellow' : 'badge-blue'}">${formatNumber(parseToFloat(m.additionalCredits))}</span></td>
+                                                <td>
+                                                    <span class="badge badge-orange">${formatNumber(totalM)}</span>
+                                                    ${addM > 0 ? `<span style="font-size:0.75rem; color: var(--text-secondary); margin-left: 4px;">(${formatNumber(addM)} extras)</span>` : ''}
+                                                </td>
                                                 <td>${m.grossAmount || '$0.00'}</td>
-                                                <td><strong style="color: ${parseToFloat(m.additionalUsage) > 0 ? 'var(--accent-blue)' : 'var(--text-muted)'};">${m.additionalUsage || '$0.00'}</strong></td>
+                                                <td>
+                                                    <strong style="color: ${addUsageM > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+                                                        ${m.additionalUsage || '$0.00'}
+                                                    </strong>
+                                                    ${addUsageM > 0 ? `<span class="badge badge-red" style="font-size:0.65rem; padding: 1px 4px; margin-left:4px; vertical-align:middle;">FATURADO</span>` : ''}
+                                                </td>
                                             </tr>
-                                        `).join('')}
+                                            `;
+                                        }).join('')}
                                     </tbody>
                                 </table>
                             </div>
