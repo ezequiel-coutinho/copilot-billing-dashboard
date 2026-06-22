@@ -24,20 +24,38 @@ async function gerenciarLogin(page, context) {
     console.log(`🕒 Código 2FA Gerado pela Automação: ${codigoMfa} (Restam ${30 - (Math.floor(Date.now() / 1000) % 30)}s para expirar)`);
     
     await page.fill("#app_totp", codigoMfa);
-    await page.keyboard.press("Enter");
 
-    // Espera navegar com sucesso ou falhar rápido se o código for inválido
+    // O GitHub faz auto-submit quando 6 dígitos são preenchidos.
+    // Vamos esperar até 5 segundos pela navegação automática. Se não navegar, apertamos Enter manualmente.
     try {
         await Promise.race([
-            page.waitForURL("https://github.com/", { timeout: 30000 }),
-            page.waitForSelector(".flash-error, [role='alert']", { timeout: 15000 }).then(async () => {
+            page.waitForURL("https://github.com/", { timeout: 5000 }),
+            page.waitForSelector(".flash-error, [role='alert']", { timeout: 5000 }).then(async () => {
                 const errorText = await page.locator(".flash-error, [role='alert']").first().innerText().catch(() => "");
-                throw new Error(`GitHub rejeitou o código 2FA: "${errorText.trim()}". Verifique se a hora da VM está sincronizada ou se o GH_TOTP_SECRET no .env está correto.`);
+                throw new Error(`GitHub rejeitou o código 2FA: "${errorText.trim()}".`);
             })
         ]);
     } catch (err) {
-        console.error("Erro no login:", err.message);
-        throw err;
+        if (err.message.includes("GitHub rejeitou")) {
+            throw err;
+        }
+        // Se deu timeout de 5 segundos sem navegar e sem erro na tela, tenta enviar com Enter manual
+        console.log("🕒 Não navegou automaticamente em 5s. Enviando com Enter manual...");
+        await page.keyboard.press("Enter");
+        
+        // Agora aguarda o resultado definitivo (sucesso ou falha rápida)
+        try {
+            await Promise.race([
+                page.waitForURL("https://github.com/", { timeout: 25000 }),
+                page.waitForSelector(".flash-error, [role='alert']", { timeout: 15000 }).then(async () => {
+                    const errorText = await page.locator(".flash-error, [role='alert']").first().innerText().catch(() => "");
+                    throw new Error(`GitHub rejeitou o código 2FA: "${errorText.trim()}". Verifique se a hora da VM está sincronizada ou se o GH_TOTP_SECRET no .env está correto.`);
+                })
+            ]);
+        } catch (subErr) {
+            console.error("Erro no login:", subErr.message);
+            throw subErr;
+        }
     }
 
     await context.storageState({ path: CONFIG.cookieFile });
