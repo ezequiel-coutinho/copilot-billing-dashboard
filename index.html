@@ -729,6 +729,19 @@
             transform: translateX(-50%) scale(1);
             pointer-events: auto;
         }
+
+        /* Prevent clipping at the top of scrollable tables by forcing tooltips on the first two rows to open downwards */
+        tbody tr:nth-child(1) .tooltip-box,
+        tbody tr:nth-child(2) .tooltip-box {
+            bottom: auto;
+            top: 125%;
+        }
+        tbody tr:nth-child(1) .tooltip-box::after,
+        tbody tr:nth-child(2) .tooltip-box::after {
+            top: auto;
+            bottom: 100%;
+            border-color: transparent transparent #0f1c3f transparent;
+        }
     </style>
 </head>
 <body>
